@@ -1,0 +1,20 @@
+// Схема подключения модуля LoRa SX1278 к ESP32 Basic:
+// SX1278	ESP32 (GPIO)
+// 3.3V	3.3V
+// GND	GND
+// NSS	GPIO15
+// DIO0	GPIO4
+// SCK	GPIO18
+// MISO	GPIO19
+// MOSI	GPIO23
+// RST	GPIO14
+
+// Схема подключения модуля LoRa SX1278 к	ESP32-S3
+// 3.3V	3.3V
+// GND	GND
+// NSS	GPIO10
+// DIO0	GPIO9
+// SCK	GPIO12
+// MISO	GPIO13
+// MOSI	GPIO11
+// RST	GPIO14
