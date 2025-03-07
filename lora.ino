@@ -22,19 +22,12 @@ SemaphoreHandle_t loraMutex;
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 #endif
-void blinkLED(int times, int delayTime) {
+
+void blinkLED(int times, int delayTime, uint8_t red = 255, uint8_t green = 255, uint8_t blue = 255) {
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
     strip.setBrightness(50); // Ограничиваем яркость
     
-    strip.setPixelColor(0, strip.Color(255, 0, 0)); // Красный
-    strip.show();
-    vTaskDelay(pdMS_TO_TICKS(delayTime));
-    
-    strip.setPixelColor(0, strip.Color(0, 255, 0)); // Зелёный
-    strip.show();
-    vTaskDelay(pdMS_TO_TICKS(delayTime));
-    
-    strip.setPixelColor(0, strip.Color(0, 0, 255)); // Синий
+    strip.setPixelColor(0, strip.Color(red, green, blue));
     strip.show();
     vTaskDelay(pdMS_TO_TICKS(delayTime));
     
@@ -50,7 +43,6 @@ void blinkLED(int times, int delayTime) {
   #endif
 }
 
-
 void taskSendHello(void *parameter) {
   while (true) {
     if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(1000))) {
@@ -58,7 +50,7 @@ void taskSendHello(void *parameter) {
       LoRa.print("Hello receiver!");
       LoRa.endPacket();
       Serial.println("Packet sent: Hello receiver!");
-      blinkLED(3, 50);
+      blinkLED(3, 50, 255, 0, 0); // Красный
       xSemaphoreGive(loraMutex);
     }
     vTaskDelay(pdMS_TO_TICKS(10000));
@@ -84,11 +76,11 @@ void taskReceive(void *parameter) {
           LoRa.beginPacket();
           LoRa.print("ACK");
           LoRa.endPacket();
-          blinkLED(2, 100);
+          blinkLED(2, 100, 0, 255, 0); // Зелёный
         }
         else if (incoming == "ACK") {
           Serial.println("ACK received!");
-          blinkLED(2, 100);
+          blinkLED(2, 100, 0, 0, 255); // Синий
         }
       }
       xSemaphoreGive(loraMutex);
