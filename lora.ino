@@ -99,16 +99,19 @@ void taskReceive(void *parameter) {
 
         if (incoming == "HLO") {
           Serial.println("Hello received! Sending ACK...");
+          uint32_t startTime = millis();  // Запоминаем время начала отправки
           LoRa.beginPacket();
           LoRa.print("ACK");
           LoRa.endPacket();
           xSemaphoreGive(loraMutex); // Освобождаем семафор раньше
+          uint32_t duration = millis() - startTime; // Вычисляем длительность
+          Serial.printf("ACK packet sent, transmission time: %u ms\n", duration);
           blinkLED(2, 300, 0, 255, 0); // Зелёный
         } else if (incoming == "ACK") {
+          xSemaphoreGive(loraMutex); // Освобождаем семафор раньше
           Serial.println("ACK received!");
           receivedAckCount++;
           updateStats();
-          xSemaphoreGive(loraMutex); // Освобождаем семафор раньше
           blinkLED(2, 100, 0, 0, 255); // Синий
         } else {
           xSemaphoreGive(loraMutex);
