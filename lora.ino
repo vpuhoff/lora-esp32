@@ -4,10 +4,12 @@
 
 // LoRa configuration
 #define LORA_FREQUENCY    433E6
-#define LORA_SPREADING    7
+#define LORA_SPREADING    11
 #define LORA_BANDWIDTH    125E3
 #define LORA_CODING_RATE  8
 #define LORA_MAX_ATTEMPTS 5
+#define LORA_TX_POWER 10
+#define STAT_HISTORY_SIZE 10
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   #define SS          10
@@ -30,9 +32,23 @@ SemaphoreHandle_t loraMutex;
 Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
+int sentHelloCount = 0;
+int receivedAckCount = 0;
+
+void updateStats() {
+  if (sentHelloCount >= STAT_HISTORY_SIZE / 2) {
+    float successRate = (receivedAckCount / (float)sentHelloCount) * 100.0;
+    Serial.printf("Success rate: %.2f%%\n", successRate);
+    if (sentHelloCount >= STAT_HISTORY_SIZE) {
+      sentHelloCount = 0;
+      receivedAckCount = 0;
+    }
+  } 
+}
+
 void blinkLED(int times, int delayTime, uint8_t red = 255, uint8_t green = 255, uint8_t blue = 255) {
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    strip.setBrightness(50); // Ограничиваем яркость
+    strip.setBrightness(50);
     strip.setPixelColor(0, strip.Color(red, green, blue));
     strip.show();
     vTaskDelay(pdMS_TO_TICKS(delayTime));
@@ -51,16 +67,19 @@ void blinkLED(int times, int delayTime, uint8_t red = 255, uint8_t green = 255, 
 void taskSendHello(void *parameter) {
   while (true) {
     if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(1000))) {
-      uint32_t startTime = millis(); // Запоминаем время начала отправки
+      uint32_t startTime = millis();  // Запоминаем время начала отправки
       LoRa.beginPacket();
-      LoRa.print("Hello");
+      LoRa.beginPacket();
+      LoRa.print("HLO");
       LoRa.endPacket();
+      xSemaphoreGive(loraMutex);
       uint32_t duration = millis() - startTime; // Вычисляем длительность
       Serial.printf("Hello packet sent, transmission time: %u ms\n", duration);
       blinkLED(3, 50, 255, 0, 0); // Красный
-      xSemaphoreGive(loraMutex);
+      sentHelloCount++;
+      updateStats();
     }
-    vTaskDelay(pdMS_TO_TICKS(random(2000, 3001))); // Случайная задержка
+    vTaskDelay(pdMS_TO_TICKS(random(5000, 10000)));  // Случайная задержка
   }
 }
 
@@ -75,21 +94,28 @@ void taskReceive(void *parameter) {
         }
         incoming.trim();
 
-        Serial.print("Received: ");
+        Serial.print("Received: ");                      
         Serial.println(incoming);
 
-        if (incoming == "Hello") {
+        if (incoming == "HLO") {
           Serial.println("Hello received! Sending ACK...");
           LoRa.beginPacket();
           LoRa.print("ACK");
           LoRa.endPacket();
+          xSemaphoreGive(loraMutex); // Освобождаем семафор раньше
           blinkLED(2, 300, 0, 255, 0); // Зелёный
         } else if (incoming == "ACK") {
           Serial.println("ACK received!");
+          receivedAckCount++;
+          updateStats();
+          xSemaphoreGive(loraMutex); // Освобождаем семафор раньше
           blinkLED(2, 100, 0, 0, 255); // Синий
+        } else {
+          xSemaphoreGive(loraMutex);
         }
+      } else {
+        xSemaphoreGive(loraMutex);
       }
-      xSemaphoreGive(loraMutex);
     } else {
       Serial.println("Failed to acquire mutex for receive!");
     }
@@ -97,11 +123,12 @@ void taskReceive(void *parameter) {
   }
 }
 
+
 void taskMonitorStack(void *parameter) {
   for (;;) {
     UBaseType_t freeStack = uxTaskGetStackHighWaterMark(NULL);
     Serial.printf("Free stack: %d bytes\n", freeStack);
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(10000));
   }
 }
 
@@ -138,6 +165,7 @@ void setup() {
   LoRa.setSpreadingFactor(LORA_SPREADING);
   LoRa.setSignalBandwidth(LORA_BANDWIDTH);
   LoRa.setCodingRate4(LORA_CODING_RATE);
+  LoRa.setTxPower(LORA_TX_POWER);
   LoRa.enableCrc();
 
   loraMutex = xSemaphoreCreateMutex();
