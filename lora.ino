@@ -46,20 +46,26 @@ void blinkLED(int times, int delayTime, uint8_t red = 255, uint8_t green = 255, 
 void taskSendHello(void *parameter) {
   while (true) {
     if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(1000))) {
+      uint32_t startTime = millis(); // Запоминаем время начала отправки
       LoRa.beginPacket();
-      LoRa.print("Hello receiver!");
+      LoRa.print("Hello");
       LoRa.endPacket();
-      Serial.println("Packet sent: Hello receiver!");
+
+      uint32_t duration = millis() - startTime; // Вычисляем длительность
+      Serial.printf("Hello packet sent, transmission time: %u ms\n", duration);
+
       blinkLED(3, 50, 255, 0, 0); // Красный
       xSemaphoreGive(loraMutex);
     }
-    vTaskDelay(pdMS_TO_TICKS(10000));
+    // Случайная задержка от 8 до 10 секунд
+    uint32_t delayTime = random(2000, 3001); // 8000 - 10000 мс
+    vTaskDelay(pdMS_TO_TICKS(delayTime));
   }
 }
 
 void taskReceive(void *parameter) {
   for (;;) {
-    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(1000))) {
+    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(2000))) {
       int packetSize = LoRa.parsePacket();
       if (packetSize) {
         String incoming = "";
@@ -71,12 +77,12 @@ void taskReceive(void *parameter) {
         Serial.print("Received: ");
         Serial.println(incoming);
 
-        if (incoming == "Hello receiver!") {
+        if (incoming == "Hello") {
           Serial.println("Hello received! Sending ACK...");
           LoRa.beginPacket();
           LoRa.print("ACK");
           LoRa.endPacket();
-          blinkLED(2, 100, 0, 255, 0); // Зелёный
+          blinkLED(2, 300, 0, 255, 0); // Зелёный
         }
         else if (incoming == "ACK") {
           Serial.println("ACK received!");
@@ -84,8 +90,10 @@ void taskReceive(void *parameter) {
         }
       }
       xSemaphoreGive(loraMutex);
+    } else {
+      Serial.println("Failed to acquire mutex for receive!");
     }
-    vTaskDelay(pdMS_TO_TICKS(50));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
 
@@ -130,7 +138,8 @@ void setup() {
 
   LoRa.setSpreadingFactor(7);
   LoRa.setSignalBandwidth(125E3);
-  LoRa.setCodingRate4(5);
+  LoRa.setCodingRate4(8);
+  LoRa.enableCrc();
 
   loraMutex = xSemaphoreCreateMutex();
 
