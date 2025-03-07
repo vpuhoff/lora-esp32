@@ -1,11 +1,13 @@
 #include <SPI.h>
 #include <LoRa.h>
+#include <Adafruit_NeoPixel.h>
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   #define SS          10
   #define RST         14
   #define DIO0        9
-  #define LED_BUILTIN 48
+  #define LED_PIN     48
+  #define NUM_LEDS    1
 #elif defined(CONFIG_IDF_TARGET_ESP32)
   #define SS          15
   #define RST         14
@@ -17,14 +19,37 @@
 
 SemaphoreHandle_t loraMutex;
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+#endif
 void blinkLED(int times, int delayTime) {
-  for (int i = 0; i < times; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+  #if defined(CONFIG_IDF_TARGET_ESP32S3)
+    strip.setBrightness(50); // Ограничиваем яркость
+    
+    strip.setPixelColor(0, strip.Color(255, 0, 0)); // Красный
+    strip.show();
     vTaskDelay(pdMS_TO_TICKS(delayTime));
-    digitalWrite(LED_BUILTIN, LOW);
+    
+    strip.setPixelColor(0, strip.Color(0, 255, 0)); // Зелёный
+    strip.show();
     vTaskDelay(pdMS_TO_TICKS(delayTime));
-  }
+    
+    strip.setPixelColor(0, strip.Color(0, 0, 255)); // Синий
+    strip.show();
+    vTaskDelay(pdMS_TO_TICKS(delayTime));
+    
+    strip.clear(); // Полное отключение
+    strip.show();
+  #else
+    for (int i = 0; i < times; i++) {
+      digitalWrite(LED_BUILTIN, HIGH);
+      vTaskDelay(pdMS_TO_TICKS(delayTime));
+      digitalWrite(LED_BUILTIN, LOW);
+      vTaskDelay(pdMS_TO_TICKS(delayTime));
+    }
+  #endif
 }
+
 
 void taskSendHello(void *parameter) {
   while (true) {
@@ -82,7 +107,13 @@ void taskMonitorStack(void *parameter) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_BUILTIN, OUTPUT);
+  #if defined(CONFIG_IDF_TARGET_ESP32S3)
+    strip.begin();
+    strip.setBrightness(50); // Установка умеренной яркости
+    strip.show();
+  #else
+    pinMode(LED_BUILTIN, OUTPUT);
+  #endif
 
   LoRa.setPins(SS, RST, DIO0);
 
