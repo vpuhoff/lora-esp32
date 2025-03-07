@@ -12,9 +12,18 @@
 // MOSI	GPIO23
 // RST	GPIO14
 
-#define SS 15
-#define RST 14
-#define DIO0 4
+#if defined(CONFIG_IDF_TARGET_ESP32S3) // Если используется ESP32-S3
+  #define SS   10
+  #define RST  14
+  #define DIO0 9
+#elif defined(CONFIG_IDF_TARGET_ESP32) // Если используется стандартный ESP32
+  #define SS   15
+  #define RST  14
+  #define DIO0 4
+#else
+  #error "Unsupported ESP32 variant"
+#endif
+
 #define LED_BUILTIN 2  // Встроенный светодиод на ESP32
 
 void blinkLED(int times, int delayTime) {
@@ -57,12 +66,12 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Sending packet...");
-  LoRa.beginPacket();
-  LoRa.print("Hello receiver!");
-  LoRa.endPacket();
+  // Serial.println("Sending packet...");
+  // LoRa.beginPacket();
+  // LoRa.print("Hello receiver!");
+  // LoRa.endPacket();
 
-  blinkLED(3, 100);  // 3 быстрых мигания при отправке сообщения
+  // blinkLED(3, 100);  // 3 быстрых мигания при отправке сообщения
 
   unsigned long startTime = millis();
   bool ackReceived = false;
@@ -82,18 +91,17 @@ void loop() {
       if (incoming == "ACK") {
         ackReceived = true;
         Serial.println("ACK received!");
-        digitalWrite(LED_BUILTIN, HIGH); // Включаем светодиод на 1 секунду
-        delay(1000);
-        digitalWrite(LED_BUILTIN, LOW);
+        blinkLED(2, 100);
+        break;
+      }
+      if (incoming == "Hello receiver!") {
+        ackReceived = true;
+        Serial.println("Hello received!");
+        blinkLED(2, 100);
         break;
       }
     }
   }
 
-  if (!ackReceived) {
-    Serial.println("ACK not received!");
-    blinkLED(5, 300);  // 5 медленных миганий при отсутствии ACK
-  }
-
-  delay(5000);
+  delay(50);
 }
