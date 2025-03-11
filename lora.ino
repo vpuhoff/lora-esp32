@@ -4,8 +4,8 @@
 
 // LoRa configuration
 #define LORA_FREQUENCY    433E6
-#define LORA_SPREADING    11
-#define LORA_BANDWIDTH    125E3
+#define LORA_SPREADING    12
+#define LORA_BANDWIDTH    31.25E3  
 #define LORA_CODING_RATE  8
 #define LORA_MAX_ATTEMPTS 5
 #define LORA_TX_POWER 10
@@ -35,6 +35,11 @@ Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 int totalSent = 0;
 int totalReceived = 0;
 float successRateSmoothed = 0.0;
+
+// Глобальные переменные для отслеживания пакетов
+int packetId = 0;
+bool packetStatus[100] = {false}; // Для хранения статуса пакетов, размер зависит от вашей памяти
+
 
 void updateStats(bool success) {
     totalSent++;
@@ -68,25 +73,32 @@ void blinkLED(int times, int delayTime, uint8_t red = 255, uint8_t green = 255, 
 
 void taskSendHello(void *parameter) {
     while (true) {
-        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(1000))) {
-            uint32_t startTime = millis();  // Запоминаем время начала отправки
+        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(4000))) {
+            int currentPacketId = packetId++;
+            
+            uint32_t startTime = millis();
             LoRa.beginPacket();
-            LoRa.print("HLO");
+            LoRa.print("HLO:");
+            LoRa.print(currentPacketId); // Отправляем ID пакета
             LoRa.endPacket();
             xSemaphoreGive(loraMutex);
 
-            uint32_t duration = millis() - startTime; // Вычисляем длительность
-            Serial.printf("Hello packet sent, transmission time: %u ms\n", duration);
-            updateStats(false);  // Пока не получили ACK, считаем неуспешным
+            uint32_t duration = millis() - startTime;
+            Serial.printf("Hello packet %d sent, transmission time: %u ms\n", 
+                         currentPacketId, duration);
+            
+            // Отмечаем, что пакет отправлен, но пока не подтвержден
+            updateStats(false);
             blinkLED(3, 50, 255, 0, 0); // Красный
         }
-        vTaskDelay(pdMS_TO_TICKS(random(5000, 10000)));  // Случайная задержка
+        vTaskDelay(pdMS_TO_TICKS(random(15000, 30000)));
     }
 }
 
+
 void taskReceive(void *parameter) {
     for (;;) {
-        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(2000))) {
+        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
             int packetSize = LoRa.parsePacket();
             if (packetSize) {
                 String incoming = "";
@@ -97,21 +109,29 @@ void taskReceive(void *parameter) {
 
                 Serial.printf("Received: %s\n", incoming.c_str());
 
-                if (incoming == "HLO") {
+                if (incoming.startsWith("HLO:")) {
+                    // Извлекаем ID пакета
+                    int receivedId = incoming.substring(4).toInt();
+                    
                     Serial.println("Hello received! Sending ACK...");
-                    uint32_t startTime = millis();  // Запоминаем время начала отправки
+                    uint32_t startTime = millis();
                     LoRa.beginPacket();
-                    LoRa.print("ACK");
+                    LoRa.print("ACK:");
+                    LoRa.print(receivedId); // Отправляем ID пакета в ACK
                     LoRa.endPacket();
                     xSemaphoreGive(loraMutex);
-                    uint32_t duration = millis() - startTime; // Вычисляем длительность
+                    uint32_t duration = millis() - startTime;
                     Serial.printf("ACK packet sent, transmission time: %u ms\n", duration);
-                    blinkLED(2, 300, 0, 255, 0); // Зелёный
-                } else if (incoming == "ACK") {
-                    Serial.println("ACK received!");
-                    updateStats(true);
+                    blinkLED(2, 1000, 0, 255, 0); // Зелёный
+                } else if (incoming.startsWith("ACK:")) {
+                    // Получили подтверждение
+                    int ackId = incoming.substring(4).toInt();
+                    Serial.printf("ACK received for packet %d!\n", ackId);
+                    
+                    // Обновляем статистику только для этого пакета
+                    updatePacketStatus(ackId, true);
                     xSemaphoreGive(loraMutex);
-                    blinkLED(2, 100, 0, 0, 255); // Синий
+                    blinkLED(2, 1000, 0, 0, 255); // Синий
                 } else {
                     xSemaphoreGive(loraMutex);
                 }
@@ -124,6 +144,27 @@ void taskReceive(void *parameter) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
+
+// Обновляем статус для конкретного пакета
+void updatePacketStatus(int id, bool success) {
+    if (id < 100) { // Проверка границ массива
+        packetStatus[id] = success;
+        
+        // Пересчитываем общую статистику
+        int received = 0;
+        for (int i = 0; i < packetId; i++) {
+            if (packetStatus[i]) received++;
+        }
+        
+        totalReceived = received;
+        totalSent = packetId;
+        
+        float successRate = (totalReceived / (float)totalSent) * 100.0;
+        Serial.printf("Updated overall success rate: %.2f%% (%d/%d)\n", 
+                      successRate, totalReceived, totalSent);
+    }
+}
+
 
 void taskMonitorStack(void *parameter) {
     for (;;) {
