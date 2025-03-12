@@ -1,7 +1,7 @@
-# LoRa ESP32-S3 Project
+# LoRa ESP32-S3 Project with Web Interface
 
 ## Description
-This project is an ESP32-S3-based device with LoRa (SX1278) support, powered by a lithium-ion battery (BL-4C) with a TP4056 charging module. The project is designed for wireless data transmission using LoRa technology.
+This project is an ESP32-S3-based device with LoRa (SX1278) support, powered by a lithium-ion battery (BL-4C) with a TP4056 charging module. The project is designed for wireless data transmission using LoRa technology and includes a web-based management interface for easy configuration and monitoring.
 
 ## Components
 - **Microcontroller:** [WeAct ESP32-S3-A DevKitC-1](https://mischianti.org/weact-esp32-s3-a-devkitc-1-high-resolution-pinout-datasheet-and-specs/?ysclid=m81uskhvyj967706428)
@@ -34,25 +34,84 @@ This project is an ESP32-S3-based device with LoRa (SX1278) support, powered by 
 | MOSI   | GPIO11          |
 | RST    | GPIO14          |
 
-## Firmware
-To upload the firmware, use [this sketch](https://github.com/vpuhoff/lora-esp32/blob/master/lora.ino). The firmware enables sending and receiving data over a LoRa network using ESP32-S3.
+## Firmware Features
 
-## Device Assembly
-1. Connect the LoRa SX1278 module to ESP32-S3 according to the wiring diagram.
-2. Connect the lithium-ion BL-4C battery via the TP4056 module.
-3. Connect the charging module to ESP32-S3 for battery-powered operation.
-4. Ensure all connections are properly made.
+### LoRa Communication
+- LoRa packet transmission and reception with automatic acknowledgements
+- Statistical tracking of packet delivery success rate
+- Configurable LoRa parameters (SF, bandwidth, coding rate, TX power)
+- RSSI monitoring
 
-## Usage
-1. Upload the firmware to ESP32-S3.
-2. Power on the device.
-3. Start test data transmission via LoRa and verify its operation.
+### Web Interface
+- Real-time configuration via browser (no need to reflash)
+- Dashboard with system status and delivery success graphs
+- LoRa parameter configuration through user-friendly interface
+- Comprehensive logging system
+- Wi-Fi configuration (AP mode, STA mode, or both)
+
+## Required Libraries
+- [LoRa](https://github.com/sandeepmistry/arduino-LoRa) - LoRa module control
+- [Adafruit_NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) - RGB LED control
+- [WiFi](https://github.com/espressif/arduino-esp32/tree/master/libraries/WiFi) - Wi-Fi management
+- [LittleFS](https://github.com/lorol/LITTLEFS) - File system for ESP32
+- [GyverDB](https://github.com/GyverLibs/GyverDB) - Database storage
+- [GyverDBFile](https://github.com/GyverLibs/GyverDB) - File-based database
+- [SettingsESPWS](https://github.com/GyverLibs/Settings) - Web-based UI configuration
+
+## Installation and Usage
+1. Install all required libraries through the Arduino Library Manager
+2. Open and upload the project to your ESP32-S3
+3. The device will create a Wi-Fi access point named "ESP32_LoRa" with password "12345678"
+4. Connect to this network and navigate to http://192.168.4.1 in your browser
+5. Use the web interface to monitor and configure the device
+
+## Web Interface Sections
+The web interface provides four main tabs:
+
+### Dashboard
+- System status overview
+- Wi-Fi connection status
+- LoRa packet statistics
+- Real-time delivery success rate graph
+
+### LoRa Status
+- Current LoRa configuration
+- Transmission statistics
+- RSSI information
+
+### Logs
+- System event logs
+- Adjustable log detail levels
+
+### Settings
+- Wi-Fi configuration
+- LoRa parameter settings
+- Device management options
+
+## Device Operation
+1. The device automatically transmits periodic test packets using the configured LoRa parameters
+2. Each transmission is tracked and statistics are updated
+3. All communications activity is logged and viewable in the web interface
+4. Configuration changes can be made in real-time without restarting
+
+## Power Optimization
+The device is designed for battery operation with:
+- Core tasks separation (LoRa on Core 1, Web interface on Core 0)
+- Efficient task scheduling
+- Web interface available only when needed
+
+## Troubleshooting
+- If the device fails to boot, check the serial output (115200 baud)
+- LED/RGB indicators show device status:
+  - Red blinks: Transmitting packet
+  - Green blinks: Received packet
+  - Blue blinks: Acknowledgement received
 
 ## Possible Improvements
-- Add a display to show network status and device parameters.
-- Optimize power consumption.
-- Use a high-gain antenna to extend communication range.
+- Power saving modes for extended battery life
+- Data visualization improvements
+- Additional sensors integration
+- OTA firmware updates
 
 ## Contact
 If you have any questions or suggestions, feel free to contact the project author via GitHub or other available channels.
-
