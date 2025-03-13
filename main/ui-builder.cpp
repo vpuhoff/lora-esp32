@@ -115,65 +115,112 @@ void UIBuilder::buildLoRaStatusTab(sets::Builder& b) {
 // Функция отображения вкладки с настройками
 void UIBuilder::buildSettingsTab(sets::Builder& b) {
     // Настройки WiFi
+    // Статические переменные для хранения настроек WiFi.
+    static bool wifiInit = false;
+    static int currentWifiModePersistent = -1;
+    static String currentApSSID = "";
+    static String currentApPass = "";
+    static String currentStaSSID = "";
+    static String currentStaPass = "";
+    if (!wifiInit) {
+        currentWifiModePersistent = _db->get(DB_NAMESPACE::wifi_mode).toInt();
+        currentApSSID = _db->get(DB_NAMESPACE::ap_ssid);
+        currentApPass = _db->get(DB_NAMESPACE::ap_pass);
+        currentStaSSID = _db->get(DB_NAMESPACE::sta_ssid);
+        currentStaPass = _db->get(DB_NAMESPACE::sta_pass);
+        wifiInit = true;
+    }
     {
         sets::Group g(b, "Настройки WiFi");
         
-        // Выбор режима WiFi (опции разделены точкой с запятой)
-        b.Select(DB_NAMESPACE::wifi_mode, "Режим работы", "Только AP;Только STA;AP + STA");
+        // Читаем текущее значение режима WiFi один раз
+        if (currentWifiModePersistent == -1) {
+            currentWifiModePersistent = _db->get(DB_NAMESPACE::wifi_mode).toInt();
+        }
+
+        // Виджет Select, который сохраняет выбранное значение в currentWifiModePersistent
+        b.Select("Режим работы", "Только AP;Только STA;AP + STA", &currentWifiModePersistent);
+        Serial.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
         
-        // Настройки точки доступа – если выбран режим AP или комбинированный режим AP+STA
-        if (_db->get(DB_NAMESPACE::wifi_mode).toInt() == MY_WIFI_MODE_AP ||
-            _db->get(DB_NAMESPACE::wifi_mode).toInt() == MY_WIFI_MODE_AP_STA) {
-            sets::Group ap(b, "Настройки точки доступа");
-            b.Input(DB_NAMESPACE::ap_ssid, "SSID точки доступа");
-            b.Pass(DB_NAMESPACE::ap_pass, "Пароль точки доступа", "******");
+        // Группа настроек для точки доступа (AP)
+        if (currentWifiModePersistent == MY_WIFI_MODE_AP || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
+            Serial.println("Отображаем настройки точки доступа");
+            b.Label(H("ap_label"), "Настройки точки доступа:");
+            b.Input(H("ap_ssid"), "SSID точки доступа", &currentApSSID);
+            b.Pass("Пароль точки доступа", &currentApPass);
+            b.reload();
+        } else {
+            Serial.println("Настройки точки доступа не отображаются");
         }
         
-        // Настройки подключения к WiFi – если выбран режим STA или комбинированный режим AP+STA
-        if (_db->get(DB_NAMESPACE::wifi_mode).toInt() == MY_WIFI_MODE_STA ||
-            _db->get(DB_NAMESPACE::wifi_mode).toInt() == MY_WIFI_MODE_AP_STA) {
-            sets::Group sta(b, "Настройки подключения к WiFi");
-            b.Input(DB_NAMESPACE::sta_ssid, "SSID для подключения");
-            b.Pass(DB_NAMESPACE::sta_pass, "Пароль для подключения", "******");
+        // Группа настроек для подключения (STA)
+        if (currentWifiModePersistent == MY_WIFI_MODE_STA || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
+            Serial.println("Отображаем настройки подключения к WiFi");
+            b.Label(H("sta_label"), "Настройки подключения к WiFi:");
+            b.Input(H("sta_ssid"), "SSID для подключения", &currentStaSSID);
+            b.Pass("Пароль для подключения", &currentStaPass);
+            b.reload();
+        } else {
+            Serial.println("Настройки подключения не отображаются");
         }
         
-        // Применение настроек
+        // Кнопка применения настроек
         if (b.Button(DB_NAMESPACE::apply_wifi, "Применить настройки WiFi")) {
-            _db->update(DB_NAMESPACE::wifi_mode, _db->get(DB_NAMESPACE::wifi_mode));
-            _db->update(DB_NAMESPACE::ap_ssid, _db->get(DB_NAMESPACE::ap_ssid));
-            _db->update(DB_NAMESPACE::ap_pass, _db->get(DB_NAMESPACE::ap_pass));
-            _db->update(DB_NAMESPACE::sta_ssid, _db->get(DB_NAMESPACE::sta_ssid));
-            _db->update(DB_NAMESPACE::sta_pass, _db->get(DB_NAMESPACE::sta_pass));
-            _needRestart = true; // Помечаем, что нужна перезагрузка
+            Serial.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
+            _db->update(DB_NAMESPACE::wifi_mode, currentWifiModePersistent);
+            _db->update(DB_NAMESPACE::ap_ssid, currentApSSID);
+            _db->update(DB_NAMESPACE::ap_pass, currentApPass);
+            _db->update(DB_NAMESPACE::sta_ssid, currentStaSSID);
+            _db->update(DB_NAMESPACE::sta_pass, currentStaPass);
+            _needRestart = true; // Отметка о необходимости перезагрузки
         }
     }
     
     // Настройки LoRa
+    // Статические переменные для хранения настроек LoRa.
+    static bool loraInit = false;
+    static int currentLoraSpreading = 0;
+    static String currentLoraBandwidth = "";
+    static int currentLoraCodingRate = 0;
+    static int currentLoraMaxAttempts = 0;
+    static int currentLoraTxPower = 0;
+    if (!loraInit) {
+        currentLoraSpreading = _db->get(DB_NAMESPACE::lora_spreading).toInt();
+        currentLoraBandwidth = _db->get(DB_NAMESPACE::lora_bandwidth).toString();
+        currentLoraCodingRate = _db->get(DB_NAMESPACE::lora_coding_rate).toInt();
+        currentLoraMaxAttempts = _db->get(DB_NAMESPACE::lora_max_attempts).toInt();
+        currentLoraTxPower = _db->get(DB_NAMESPACE::lora_tx_power).toInt();
+        loraInit = true;
+    }
     {
         sets::Group g(b, "Настройки LoRa");
         
-        // Spreading Factor (SF) – список опций через точку с запятой
         String sfOptions = "7;8;9;10;11;12";
-        b.Select(DB_NAMESPACE::lora_spreading, "Spreading Factor", sfOptions);
+        b.Select("Spreading Factor", sfOptions, &currentLoraSpreading);
         
-        // Bandwidth (BW)
         String bwOptions = "7.8;10.4;15.6;20.8;31.25;41.7;62.5;125;250;500";
-        b.Select(DB_NAMESPACE::lora_bandwidth, "Bandwidth (kHz)", bwOptions);
+        b.Select("Bandwidth (kHz)", bwOptions, &currentLoraBandwidth);
         
-        // Coding Rate (CR)
         String crOptions = "5;6;7;8";
-        b.Select(DB_NAMESPACE::lora_coding_rate, "Coding Rate (4/x)", crOptions);
+        b.Select("Coding Rate (4/x)", crOptions, &currentLoraCodingRate);
         
-        // Максимальное количество попыток
-        b.Slider(DB_NAMESPACE::lora_max_attempts, "Макс. число попыток", 1, 10, 1);
-        
-        // Мощность передачи
-        b.Slider(DB_NAMESPACE::lora_tx_power, "Мощность передачи (dBm)", 2, 20, 1);
-        
-        // Кнопка применения настроек LoRa
-        if (b.Button(DB_NAMESPACE::apply_lora, "Применить настройки LoRa")) {
+        b.Slider(H("lora_max_attempts"), "Макс. число попыток", 1.0f, 10.0f, 1.0f, "", &currentLoraMaxAttempts);
+        b.Slider(H("lora_tx_power"), "Мощность передачи (dBm)", 2.0f, 20.0f, 1.0f, "", &currentLoraTxPower);
+    
+        if (b.Button(H("apply_lora"), "Применить настройки LoRa")) {
+            logger.add(String("Spreading:") + currentLoraSpreading);
+            logger.add(String("Bandwidth:") + currentLoraBandwidth.toFloat());
+            logger.add(String("CodingRate:") + currentLoraCodingRate);
+            logger.add(String("TxPower:") + currentLoraTxPower);
+            _db->set(DB_NAMESPACE::lora_spreading, currentLoraSpreading);
+            _db->set(DB_NAMESPACE::lora_bandwidth, currentLoraBandwidth.toFloat());
+            _db->set(DB_NAMESPACE::lora_coding_rate, currentLoraCodingRate);
+            _db->set(DB_NAMESPACE::lora_max_attempts, currentLoraMaxAttempts);
+            _db->set(DB_NAMESPACE::lora_tx_power, currentLoraTxPower);
             loraManager->applySettings();
+            _needRestart = true; // Отметка о необходимости перезагрузки
         }
+
     }
     
     // Управление устройством

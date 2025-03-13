@@ -21,6 +21,10 @@ void LoRaManager::applySettings() {
     logger.add("Применение настроек LoRa...");
     
     if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
+        logger.add(String("Spreading:") + _spreading);
+        logger.add(String("Bandwidth:") + _bandwidth);
+        logger.add(String("CodingRate:") + _codingRate);
+        logger.add(String("TxPower:") + _txPower);
         LoRa.setSpreadingFactor(_spreading);
         LoRa.setSignalBandwidth(_bandwidth * 1000);
         LoRa.setCodingRate4(_codingRate);
@@ -31,11 +35,6 @@ void LoRaManager::applySettings() {
         logger.add("Не удалось захватить мьютекс", LOG_ERROR);
     }
     
-    _db->update(DB_NAMESPACE::lora_spreading, _spreading);
-    _db->update(DB_NAMESPACE::lora_bandwidth, _bandwidth);
-    _db->update(DB_NAMESPACE::lora_coding_rate, _codingRate);
-    _db->update(DB_NAMESPACE::lora_max_attempts, _maxAttempts);
-    _db->update(DB_NAMESPACE::lora_tx_power, _txPower);
 }
 
 
