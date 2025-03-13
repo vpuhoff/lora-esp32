@@ -45,7 +45,10 @@ void LoRaManager::initDefaults() {
     _db->init(DB_NAMESPACE::lora_coding_rate, LORA_CODING_RATE); // 4/8
     _db->init(DB_NAMESPACE::lora_max_attempts, LORA_MAX_ATTEMPTS); // 5 попыток
     _db->init(DB_NAMESPACE::lora_tx_power, LORA_TX_POWER);      // 10 dBm
-    
+    _db->init(DB_NAMESPACE::lora_spreading_selected, 0);  
+    _db->init(DB_NAMESPACE::lora_bandwidth_selected, 0); 
+    _db->init(DB_NAMESPACE::lora_coding_rate_selected, 0); 
+
     _spreading = _db->get(DB_NAMESPACE::lora_spreading).toInt();
     _bandwidth = _db->get(DB_NAMESPACE::lora_bandwidth).toFloat();
     _codingRate = _db->get(DB_NAMESPACE::lora_coding_rate).toInt();

@@ -34,6 +34,9 @@ DB_KEYS(
     lora_spreading,   // Spreading Factor (коэффициент расширения)
     lora_bandwidth,   // Bandwidth (полоса пропускания)
     lora_coding_rate, // Coding Rate (скорость кодирования)
+    lora_spreading_selected,   // Spreading Factor (коэффициент расширения) (номер выбранного поля)
+    lora_bandwidth_selected,   // Bandwidth (полоса пропускания) (номер выбранного поля)
+    lora_coding_rate_selected, // Coding Rate (скорость кодирования) (номер выбранного поля)
     lora_max_attempts,// Максимальное количество попыток
     lora_tx_power,    // Мощность передачи
     apply_lora        // Кнопка применения настроек LoRa

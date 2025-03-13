@@ -36,9 +36,13 @@ void taskReceive(void *parameter) {
     for (;;) {
         if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
             int packetSize = LoRa.parsePacket();
+
             if (packetSize) {
+
                 String incoming = "";
                 while (LoRa.available()) {
+                    //int Rssi = LoRa.packetRssi();
+                    //Serial.printf("RSSI: %s\n", Rssi);
                     incoming += (char)LoRa.read();
                 }
                 incoming.trim();

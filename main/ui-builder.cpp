@@ -196,36 +196,58 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         sets::Group g(b, "Настройки LoRa");
         
         String sfOptions = "7;8;9;10;11;12";
-        b.Select("Spreading Factor", sfOptions, &currentLoraSpreading);
+        b.Select(DB_NAMESPACE::lora_spreading_selected, "Spreading Factor", sfOptions);
         
         String bwOptions = "7.8;10.4;15.6;20.8;31.25;41.7;62.5;125;250;500";
-        b.Select("Bandwidth (kHz)", bwOptions, &currentLoraBandwidth);
+        float bwOptionsValues[] = {7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500};
+
+        
+        b.Select(DB_NAMESPACE::lora_bandwidth_selected, "Bandwidth (kHz)", bwOptions);
         
         String crOptions = "5;6;7;8";
-        b.Select("Coding Rate (4/x)", crOptions, &currentLoraCodingRate);
+        b.Select(DB_NAMESPACE::lora_coding_rate_selected, "Coding Rate (4/x)", crOptions);
         
-        b.Slider(H("lora_max_attempts"), "Макс. число попыток", 1.0f, 10.0f, 1.0f, "", &currentLoraMaxAttempts);
-        b.Slider(H("lora_tx_power"), "Мощность передачи (dBm)", 2.0f, 20.0f, 1.0f, "", &currentLoraTxPower);
+        b.Slider(DB_NAMESPACE::lora_max_attempts, "Макс. число попыток", 1.0f, 10.0f, 1.0f, "");
+        b.Slider(DB_NAMESPACE::lora_tx_power, "Мощность передачи (dBm)", 2.0f, 20.0f, 1.0f, "");
+
+        // обработка действий
+        switch (b.build.id) { 
+            case DB_NAMESPACE::lora_spreading_selected:
+                logger.add(String("current_lora_spreading:") + String(sfOptions[b.build.value]));
+                currentLoraSpreading = String(sfOptions[b.build.value]).toInt();
+                break;
+            case DB_NAMESPACE::lora_bandwidth_selected:
+                logger.add(String("current_lora_bandwidth:") + String(bwOptions[b.build.value]));
+                currentLoraBandwidth = bwOptionsValues[b.build.value];
+                break;
+            case DB_NAMESPACE::lora_coding_rate_selected:
+                logger.add(String("current_lora_coding_rate:") + String(crOptions[b.build.value]));
+                currentLoraCodingRate = String(crOptions[b.build.value]).toInt();
+                break;
+            case DB_NAMESPACE::lora_max_attempts:
+                //logger.add(String("lora_max_attempts:") + String(b.build.value));
+                currentLoraMaxAttempts = b.build.value.toInt();
+                break;
+            case DB_NAMESPACE::lora_tx_power:
+                //logger.add(String("lora_tx_power:") + String(b.build.value));
+                currentLoraTxPower = b.build.value.toInt();
+                break;
+        }
     
         if (b.Button(H("apply_lora"), "Применить настройки LoRa")) {
-            logger.add(String("Spreading:") + currentLoraSpreading);
-            logger.add(String("Bandwidth:") + currentLoraBandwidth.toFloat());
-            logger.add(String("CodingRate:") + currentLoraCodingRate);
-            logger.add(String("TxPower:") + currentLoraTxPower);
-            _db->set(DB_NAMESPACE::lora_spreading, currentLoraSpreading);
-            _db->set(DB_NAMESPACE::lora_bandwidth, currentLoraBandwidth.toFloat());
-            _db->set(DB_NAMESPACE::lora_coding_rate, currentLoraCodingRate);
-            _db->set(DB_NAMESPACE::lora_max_attempts, currentLoraMaxAttempts);
-            _db->set(DB_NAMESPACE::lora_tx_power, currentLoraTxPower);
+            _db->update(DB_NAMESPACE::lora_spreading, currentLoraSpreading);
+            _db->update(DB_NAMESPACE::lora_bandwidth, currentLoraBandwidth.toFloat());
+            _db->update(DB_NAMESPACE::lora_coding_rate, currentLoraCodingRate);
+            _db->update(DB_NAMESPACE::lora_max_attempts, currentLoraMaxAttempts);
+            _db->update(DB_NAMESPACE::lora_tx_power, currentLoraTxPower);
             loraManager->applySettings();
             _needRestart = true; // Отметка о необходимости перезагрузки
         }
-
     }
     
     // Управление устройством
     {
-        sets::Group g(b, "Управление устройством");
+        //sets::Group g(b, "Управление устройством");
         if (b.Button(DB_NAMESPACE::restart_device, "Перезагрузить устройство")) {
             logger.add("Запрос на перезагрузку устройства...");
             _needRestart = true;
