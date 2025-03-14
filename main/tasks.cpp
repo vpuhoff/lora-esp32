@@ -53,7 +53,7 @@ void taskReceive(void *parameter) {
                     // Извлекаем ID пакета
                     int receivedId = incoming.substring(4).toInt();
                     
-                    Serial.println("Hello received! Sending ACK...");
+                    logger.println("Hello received! Sending ACK...");
                     uint32_t startTime = millis();
                     LoRa.beginPacket();
                     LoRa.print("ACK:");
@@ -79,7 +79,7 @@ void taskReceive(void *parameter) {
                 xSemaphoreGive(loraMutex);
             }
         } else {
-          Serial.println("Failed to acquire mutex for receive!");
+          logger.println("Failed to acquire mutex for receive!");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
     }

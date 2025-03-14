@@ -3,10 +3,10 @@
 
 bool setupLoRa() {
     LoRa.setPins(SS, RST, DIO0);
-    Serial.println("Initializing LoRa...");
+    logger.println("Initializing LoRa...");
     int attempts = 0;
     while (!LoRa.begin(LORA_FREQUENCY) && attempts < LORA_MAX_ATTEMPTS) {
-        Serial.println("LoRa init failed, retrying...");
+        logger.println("LoRa init failed, retrying...");
         blinkLED(2, 200);
         vTaskDelay(pdMS_TO_TICKS(10000));
         attempts++;

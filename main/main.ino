@@ -75,14 +75,14 @@ void taskWebInterface(void *parameter) {
 
 void setup() {
     Serial.begin(115200);
-    Serial.println();
+    logger.println();
     
     // Инициализация LED
     setupLed();
     
     // Инициализация файловой системы
     if (!LittleFS.begin(true)) {
-        Serial.println("Ошибка инициализации LittleFS");
+        logger.println("Ошибка инициализации LittleFS");
     }
     
     // Инициализация базы данных
@@ -104,13 +104,13 @@ void setup() {
     // Инициализация LoRa
     if (!setupLoRa()) {
         logger.println("LoRa init failed permanently.");
-        Serial.println("LoRa init failed permanently. Blinking indefinitely...");
+        logger.println("LoRa init failed permanently. Blinking indefinitely...");
         while (true) {
             blinkLED(1, 200);
         }
     }
     logger.println("LoRa started successfully!");
-    Serial.println("LoRa started successfully!");
+    logger.println("LoRa started successfully!");
     blinkLED(3, 100);
     
     // Инициализация веб-сервера

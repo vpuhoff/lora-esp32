@@ -132,33 +132,33 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
 
         // Виджет Select, который сохраняет выбранное значение в currentWifiModePersistent
         b.Select("Режим работы", "Только AP;Только STA;AP + STA", &currentWifiModePersistent);
-        Serial.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
+        logger.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
         
         // Группа настроек для точки доступа (AP)
         if (currentWifiModePersistent == MY_WIFI_MODE_AP || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
-            Serial.println("Отображаем настройки точки доступа");
+            logger.println("Отображаем настройки точки доступа");
             b.Label(H("ap_label"), "Настройки точки доступа:");
             b.Input(H("ap_ssid"), "SSID точки доступа", &currentApSSID);
             b.Pass("Пароль точки доступа", &currentApPass);
             b.reload();
         } else {
-            Serial.println("Настройки точки доступа не отображаются");
+            logger.println("Настройки точки доступа не отображаются");
         }
         
         // Группа настроек для подключения (STA)
         if (currentWifiModePersistent == MY_WIFI_MODE_STA || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
-            Serial.println("Отображаем настройки подключения к WiFi");
+            logger.println("Отображаем настройки подключения к WiFi");
             b.Label(H("sta_label"), "Настройки подключения к WiFi:");
             b.Input(H("sta_ssid"), "SSID для подключения", &currentStaSSID);
             b.Pass("Пароль для подключения", &currentStaPass);
             b.reload();
         } else {
-            Serial.println("Настройки подключения не отображаются");
+            logger.println("Настройки подключения не отображаются");
         }
         
         // Кнопка применения настроек
         if (b.Button(DB_NAMESPACE::apply_wifi, "Применить настройки WiFi")) {
-            Serial.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
+            logger.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
             _db->update(DB_NAMESPACE::wifi_mode, currentWifiModePersistent);
             _db->update(DB_NAMESPACE::ap_ssid, currentApSSID);
             _db->update(DB_NAMESPACE::ap_pass, currentApPass);
