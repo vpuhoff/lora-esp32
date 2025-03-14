@@ -6,9 +6,11 @@
 #include <LittleFS.h>
 #include <GyverDBFile.h>
 #include <SettingsESPWS.h>
+#include <GTimer.h>
 
 // Подключение всех модулей
 #include "config.h"
+#include "logging.h" 
 #include "led.h"
 #include "lora_module.h"
 #include "statistics.h"
@@ -16,7 +18,7 @@
 
 // Модули веб-интерфейса
 #include "esp32-config.h"
-#include "logger.h"
+
 #include "wifi-manager.h"    // В этом файле объявлен extern WiFiManager* wifiManager;
 #include "lora-manager.h"    // В этом файле объявлен extern LoRaManager* loraManager;
 #include "plot-manager.h"
@@ -61,10 +63,10 @@ void taskWebInterface(void *parameter) {
             logTimer = millis();
             if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
                 if (WiFi.status() == WL_CONNECTED) {
-                    logger.add("WiFi подключен к " + WiFi.SSID() + ", сигнал: " + String(WiFi.RSSI()) + " dBm", LOG_DEBUG);
+                    logger.println("WiFi подключен к " + WiFi.SSID() + ", сигнал: " + String(WiFi.RSSI()) + " dBm");
                 }
             }
-            logger.add("Свободная память: " + String(ESP.getFreeHeap()) + " байт", LOG_DEBUG);
+            logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
         }
         
         vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
@@ -101,13 +103,13 @@ void setup() {
     
     // Инициализация LoRa
     if (!setupLoRa()) {
-        logger.add("LoRa init failed permanently.", LOG_ERROR);
+        logger.println("LoRa init failed permanently.");
         Serial.println("LoRa init failed permanently. Blinking indefinitely...");
         while (true) {
             blinkLED(1, 200);
         }
     }
-    logger.add("LoRa started successfully!");
+    logger.println("LoRa started successfully!");
     Serial.println("LoRa started successfully!");
     blinkLED(3, 100);
     
@@ -122,9 +124,15 @@ void setup() {
     xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 1, NULL, 0);
     createTasks();
     
-    logger.add("Система инициализирована");
+    logger.println("Система инициализирована");
 }
 
 void loop() {
-    vTaskDelay(portMAX_DELAY);
+    static GTimer<millis> tmr(1000, true);
+    if (tmr) {
+        sett.updater()
+            .update(H("logger"), logger);
+            //.update(H(lbl2), random(100));
+    }
+    vTaskDelay(1000);
 }

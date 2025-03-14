@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <GyverDB.h>
 #include "esp32-config.h"
-#include "logger.h"
+#include "logging.h"
 
 class WiFiManager {
 public:
