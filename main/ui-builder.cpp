@@ -1,8 +1,6 @@
 #include "ui-builder.h"
 #include "statistics.h"
-
-// Создаём статический экземпляр логгера для виджета Log с размером буфера 10000 байт.
-static sets::Logger logWidget(10000);
+#include "logging.h"
 
 // Конструктор
 UIBuilder::UIBuilder(GyverDB* db) : _db(db), _needRestart(false) {
@@ -70,22 +68,16 @@ void UIBuilder::buildDashboardTab(sets::Builder& b) {
 
 // Функция отображения вкладки с логами
 void UIBuilder::buildLogsTab(sets::Builder& b) {
-    // Настройки логгера
-    {
-        sets::Group g(b, "Настройки логгера");
-        b.Select(DB_NAMESPACE::log_level, "Уровень вывода логов", "INFO,WARN,ERROR,DEBUG");
-        if (b.Button(DB_NAMESPACE::clear_log, "Очистить лог")) {
-            logWidget.clear();
-            // Вызов logWidget.add("Лог очищен") удалён, так как метод add отсутствует.
-            // При необходимости можно добавить сообщение в глобальный лог с помощью другого объекта.
-        }
-        // Обновление уровня логирования можно реализовать по необходимости.
-    }
-    
     // Вывод логов с использованием виджета Log
     {
         sets::Group g(b, "Логи системы");
-        b.Log(logWidget, "Логи системы");
+        b.Log(H("logger"), logger);
+    }
+    if (b.Button("Test Log")) {
+        logger.println(millis());
+        logger.println("info: This is an info message");
+        logger.println(warn_() + "This is a warning message");
+        logger.println("err: This is an error message");
     }
 }
 
@@ -140,33 +132,33 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
 
         // Виджет Select, который сохраняет выбранное значение в currentWifiModePersistent
         b.Select("Режим работы", "Только AP;Только STA;AP + STA", &currentWifiModePersistent);
-        Serial.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
+        logger.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
         
         // Группа настроек для точки доступа (AP)
         if (currentWifiModePersistent == MY_WIFI_MODE_AP || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
-            Serial.println("Отображаем настройки точки доступа");
+            logger.println("Отображаем настройки точки доступа");
             b.Label(H("ap_label"), "Настройки точки доступа:");
             b.Input(H("ap_ssid"), "SSID точки доступа", &currentApSSID);
             b.Pass("Пароль точки доступа", &currentApPass);
             b.reload();
         } else {
-            Serial.println("Настройки точки доступа не отображаются");
+            logger.println("Настройки точки доступа не отображаются");
         }
         
         // Группа настроек для подключения (STA)
         if (currentWifiModePersistent == MY_WIFI_MODE_STA || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
-            Serial.println("Отображаем настройки подключения к WiFi");
+            logger.println("Отображаем настройки подключения к WiFi");
             b.Label(H("sta_label"), "Настройки подключения к WiFi:");
             b.Input(H("sta_ssid"), "SSID для подключения", &currentStaSSID);
             b.Pass("Пароль для подключения", &currentStaPass);
             b.reload();
         } else {
-            Serial.println("Настройки подключения не отображаются");
+            logger.println("Настройки подключения не отображаются");
         }
         
         // Кнопка применения настроек
         if (b.Button(DB_NAMESPACE::apply_wifi, "Применить настройки WiFi")) {
-            Serial.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
+            logger.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
             _db->update(DB_NAMESPACE::wifi_mode, currentWifiModePersistent);
             _db->update(DB_NAMESPACE::ap_ssid, currentApSSID);
             _db->update(DB_NAMESPACE::ap_pass, currentApPass);
@@ -213,23 +205,23 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         // обработка действий
         switch (b.build.id) { 
             case DB_NAMESPACE::lora_spreading_selected:
-                logger.add(String("current_lora_spreading:") + String(sfOptions[b.build.value]));
+                logger.println(String("current_lora_spreading:") + String(sfOptions[b.build.value]));
                 currentLoraSpreading = String(sfOptions[b.build.value]).toInt();
                 break;
             case DB_NAMESPACE::lora_bandwidth_selected:
-                logger.add(String("current_lora_bandwidth:") + String(bwOptions[b.build.value]));
+                logger.println(String("current_lora_bandwidth:") + String(bwOptions[b.build.value]));
                 currentLoraBandwidth = bwOptionsValues[b.build.value];
                 break;
             case DB_NAMESPACE::lora_coding_rate_selected:
-                logger.add(String("current_lora_coding_rate:") + String(crOptions[b.build.value]));
+                logger.println(String("current_lora_coding_rate:") + String(crOptions[b.build.value]));
                 currentLoraCodingRate = String(crOptions[b.build.value]).toInt();
                 break;
             case DB_NAMESPACE::lora_max_attempts:
-                //logger.add(String("lora_max_attempts:") + String(b.build.value));
+                //logger.println(String("lora_max_attempts:") + String(b.build.value));
                 currentLoraMaxAttempts = b.build.value.toInt();
                 break;
             case DB_NAMESPACE::lora_tx_power:
-                //logger.add(String("lora_tx_power:") + String(b.build.value));
+                //logger.println(String("lora_tx_power:") + String(b.build.value));
                 currentLoraTxPower = b.build.value.toInt();
                 break;
         }
@@ -249,10 +241,11 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
     {
         //sets::Group g(b, "Управление устройством");
         if (b.Button(DB_NAMESPACE::restart_device, "Перезагрузить устройство")) {
-            logger.add("Запрос на перезагрузку устройства...");
+            logger.println("Запрос на перезагрузку устройства...");
             _needRestart = true;
         }
     }
+
 }
 
 

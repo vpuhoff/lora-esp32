@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <LoRa.h>  // Подключаем библиотеку LoRa
+#include "logging.h"
 
 // Создание всех задач
 void createTasks();

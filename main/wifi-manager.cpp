@@ -15,7 +15,7 @@ void WiFiManager::applySettings() {
     String staSSID = _db->get(DB_NAMESPACE::sta_ssid);
     String staPass = _db->get(DB_NAMESPACE::sta_pass);
     
-    logger.add("Применение настроек WiFi...");
+    logger.println("Применение настроек WiFi...");
     
     switch (mode) {
         case MY_WIFI_MODE_AP:
@@ -31,7 +31,7 @@ void WiFiManager::applySettings() {
     
     if (mode == MY_WIFI_MODE_AP || mode == MY_WIFI_MODE_AP_STA) {
         if (WiFi.softAP(apSSID.c_str(), apPass.length() > 0 ? apPass.c_str() : NULL)) {
-            logger.add("Точка доступа: " + apSSID);
+            logger.println("Точка доступа: " + apSSID);
         }
     }
     

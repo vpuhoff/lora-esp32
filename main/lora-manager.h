@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <GyverDB.h>
 #include "esp32-config.h"
-#include "logger.h"
+#include "logging.h"
 
 class LoRaManager {
 public:

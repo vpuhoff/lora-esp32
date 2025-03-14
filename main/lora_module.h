@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <LoRa.h>
+#include "logging.h"
 
 // Инициализация LoRa модуля
 bool setupLoRa();

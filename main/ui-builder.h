@@ -3,7 +3,7 @@
 #include <GyverDB.h>
 #include <SettingsESPWS.h>
 #include "esp32-config.h"
-#include "logger.h"
+#include "logging.h"
 #include "wifi-manager.h"
 #include "lora-manager.h"
 #include "plot-manager.h"

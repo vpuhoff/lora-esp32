@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "esp32-config.h"
-#include "logger.h"
+#include "logging.h"
 
 class PlotManager {
 public:
