@@ -8,6 +8,7 @@ This project is an ESP32-S3-based device with LoRa (SX1278) support, powered by 
 - **LoRa Module:** [SX1278](https://www.semtech.com/products/wireless-rf/lora-connect/sx1278)
 - **Charging Module:** [TP4056](http://kungur.hldns.ru/pdf/TP4056.pdf)
 - **Battery:** [Nokia BL-4C](https://www.wildberries.by/catalog/16442322/detail.aspx)
+- **Case:** [3d printed](https://www.thingiverse.com/thing:6973923)
 
 ## Wiring
 ### Wiring LoRa SX1278 to ESP32 Basic
