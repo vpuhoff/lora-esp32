@@ -3,6 +3,8 @@
 #include <LoRa.h>
 #include <WiFi.h>
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7735.h>
 #include <LittleFS.h>
 #include <GyverDBFile.h>
 #include <SettingsESPWS.h>
@@ -15,6 +17,9 @@
 #include "lora_module.h"
 #include "statistics.h"
 #include "tasks.h"
+#include "display-manager.h"
+#include "system-monitor.h"
+
 
 // Модули веб-интерфейса
 #include "esp32-config.h"
@@ -26,6 +31,8 @@
 
 // Объявляем глобальный указатель на UIBuilder
 UIBuilder* uiBuilder = nullptr;
+DisplayManager* displayManager = nullptr;
+SystemMonitor* systemMonitor = nullptr;
 
 // Создаем базу данных для хранения настроек
 GyverDBFile db(&LittleFS, "/settings.db");
@@ -57,11 +64,22 @@ void setup() {
     wifiManager = new WiFiManager(&db);
     loraManager = new LoRaManager(&db);
     uiBuilder = new UIBuilder(&db);
+    systemMonitor = new SystemMonitor(); // Создаем системный монитор
+    displayManager = new DisplayManager(&db); // Создаем менеджер дисплея
     
     // Инициализация значений по умолчанию
     wifiManager->initDefaults();
     loraManager->initDefaults();
+    displayManager->initDefaults(); // Инициализация настроек дисплея
     db.init(DB_NAMESPACE::log_level, LOG_INFO);
+
+    // Настройка дисплея
+    if (displayManager->setupDisplay()) {
+        displayManager->showLogo(); // Показываем заставку
+        logger.println("Дисплей инициализирован успешно");
+    } else {
+        logger.println(error_() + "Ошибка инициализации дисплея");
+    }
     
     // Применение настроек WiFi
     wifiManager->applySettings();
@@ -70,6 +88,9 @@ void setup() {
     if (!setupLoRa()) {
         logger.println("LoRa init failed permanently.");
         logger.println("LoRa init failed permanently. Blinking indefinitely...");
+        if (displayManager->isEnabled()) {
+            displayManager->showError("LoRa initialization failed!");
+        }
         while (true) {
             blinkLED(1, 200);
         }
@@ -89,6 +110,11 @@ void setup() {
     createTasks();
     
     logger.println("Система инициализирована");
+
+    // Показываем информационное сообщение на дисплее
+    if (displayManager->isEnabled()) {
+        displayManager->showInfo("System initialized successfully!", 3000);
+    }
 }
 
 void loop() {

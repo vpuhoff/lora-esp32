@@ -3,6 +3,8 @@
 #include "statistics.h"
 #include "plot-manager.h"
 #include "lora-manager.h" 
+#include "system-monitor.h"
+#include "display-manager.h"
 #include <WiFi.h>
 #include <SettingsESPWS.h>
 
@@ -14,6 +16,7 @@ void createTasks() {
     xTaskCreatePinnedToCore(taskReceive, "Receive", 3072, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 2048, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
 }
 
 void taskSendHello(void *parameter) {
@@ -93,11 +96,30 @@ void taskReceive(void *parameter) {
     }
 }
 
+// Заменяем существующую функцию taskMonitorStack
 void taskMonitorStack(void *parameter) {
+    // Создаем экземпляр SystemMonitor, если он еще не создан
+    if (systemMonitor == nullptr) {
+        systemMonitor = new SystemMonitor();
+    }
+    
     for (;;) {
+        // Обновляем данные мониторинга
+        systemMonitor->update();
+        
+        // Логируем базовую информацию о стеке
         UBaseType_t freeStack = uxTaskGetStackHighWaterMark(NULL);
         Serial.printf("Free stack: %d bytes\n", freeStack);
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        
+        // Периодически логируем полную статистику (раз в минуту)
+        static uint8_t fullLogCounter = 0;
+        if (++fullLogCounter >= 6) {  // 6 * 10 секунд = 1 минута
+            systemMonitor->logTasksStatistics();
+            systemMonitor->logMemoryStatistics();
+            fullLogCounter = 0;
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(10000));  // Проверка каждые 10 секунд
     }
 }
 
@@ -133,5 +155,15 @@ void taskWebInterface(void *parameter) {
         }
         
         vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
+    }
+}
+
+void taskDisplayUpdate(void *parameter) {
+    for (;;) {
+        if (displayManager && displayManager->isEnabled()) {
+            displayManager->tick();
+            displayManager->updateCurrentPage();
+        }
+        vTaskDelay(pdMS_TO_TICKS(50)); // Обновление каждые 50 мс
     }
 }

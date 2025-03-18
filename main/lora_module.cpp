@@ -2,7 +2,7 @@
 #include "led.h"
 
 bool setupLoRa() {
-    LoRa.setPins(SS, RST, DIO0);
+    LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
     logger.println("Initializing LoRa...");
     int attempts = 0;
     while (!LoRa.begin(LORA_FREQUENCY) && attempts < LORA_MAX_ATTEMPTS) {

@@ -39,7 +39,14 @@ DB_KEYS(
     lora_coding_rate_selected, // Coding Rate (скорость кодирования) (номер выбранного поля)
     lora_max_attempts,// Максимальное количество попыток
     lora_tx_power,    // Мощность передачи
-    apply_lora        // Кнопка применения настроек LoRa
+    apply_lora,       // Кнопка применения настроек LoRa
+
+    // Настройки дисплея
+    display_enabled,        // Включение/выключение дисплея
+    display_brightness,     // Яркость подсветки
+    display_timeout,        // Тайм-аут подсветки
+    display_auto_scroll,    // Автоматическое переключение страниц
+    display_scroll_interval // Интервал переключения страниц
 );
 
 // Уровни логирования

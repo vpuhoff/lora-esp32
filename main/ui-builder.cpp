@@ -19,10 +19,12 @@ void UIBuilder::buildInterface(sets::Builder& b) {
         Dashboard,
         LoRaStatus,
         Logs,
-        Settings
+        Settings,
+        Display,     // Добавляем вкладку дисплея
+        SystemMonitor // Добавляем вкладку системного мониторинга
     } static tab;
 
-    if (b.Tabs("Dashboard;LoRa Status;Logs;Settings", (uint8_t*)&tab)) {
+    if (b.Tabs("Dashboard;LoRa Status;Logs;Settings;Display;System", (uint8_t*)&tab)) {
         b.reload();
         return;
     }
@@ -40,6 +42,91 @@ void UIBuilder::buildInterface(sets::Builder& b) {
         case Tabs::Settings:
             buildSettingsTab(b);
             break;
+        case Tabs::Display:     // Обработка новой вкладки
+            buildDisplayTab(b);
+            break;
+        case Tabs::SystemMonitor: // Обработка вкладки мониторинга
+            buildSystemMonitorTab(b);
+            break;
+    }
+}
+
+// Добавить реализацию метода buildDisplayTab:
+void UIBuilder::buildDisplayTab(sets::Builder& b) {
+    // Статические переменные для настроек дисплея
+    static bool displayInit = false;
+    static bool displayEnabled = true;
+    static int displayBrightness = 100;
+    static int displayTimeout = 60;
+    static bool displayAutoScroll = true;
+    static int displayScrollInterval = 5;
+    
+    if (!displayInit) {
+        displayEnabled = _db->get(DB_NAMESPACE::display_enabled).toBool();
+        displayBrightness = _db->get(DB_NAMESPACE::display_brightness).toInt();
+        displayTimeout = _db->get(DB_NAMESPACE::display_timeout).toInt();
+        displayAutoScroll = _db->get(DB_NAMESPACE::display_auto_scroll).toBool();
+        displayScrollInterval = _db->get(DB_NAMESPACE::display_scroll_interval).toInt() / 1000;
+        displayInit = true;
+    }
+    
+    {
+        sets::Group g(b, "Настройки дисплея");
+        
+        b.Switch(H("display_enabled"), "Включить дисплей", &displayEnabled);
+        b.Slider(H("display_brightness"), "Яркость дисплея", 0, 100, 5, "%");
+        b.Slider(H("display_timeout"), "Тайм-аут подсветки (сек)", 0, 300, 10, "сек");
+        b.Switch(H("display_auto_scroll"), "Автоматическое переключение страниц", &displayAutoScroll);
+        
+        if (displayAutoScroll) {
+            b.Slider(H("display_scroll_interval"), "Интервал переключения (сек)", 1, 30, 1, "сек");
+        }
+        
+        if (b.Button(H("apply_display"), "Применить настройки дисплея")) {
+            _db->update(DB_NAMESPACE::display_enabled, displayEnabled);
+            _db->update(DB_NAMESPACE::display_brightness, displayBrightness);
+            _db->update(DB_NAMESPACE::display_timeout, displayTimeout);
+            _db->update(DB_NAMESPACE::display_auto_scroll, displayAutoScroll);
+            _db->update(DB_NAMESPACE::display_scroll_interval, displayScrollInterval * 1000);
+            
+            if (displayManager) {
+                displayManager->applySettings();
+            }
+        }
+    }
+    
+    {
+        sets::Group g(b, "Управление дисплеем");
+        
+        if (b.Button(H("display_next"), "Следующая страница")) {
+            if (displayManager) {
+                displayManager->nextPage();
+            }
+        }
+        
+        if (b.Button(H("display_show_logo"), "Показать логотип")) {
+            if (displayManager) {
+                displayManager->showLogo();
+            }
+        }
+        
+        if (b.Button(H("display_show_lora"), "Показать статус LoRa")) {
+            if (displayManager) {
+                displayManager->showLoRaStatus();
+            }
+        }
+        
+        if (b.Button(H("display_show_wifi"), "Показать статус WiFi")) {
+            if (displayManager) {
+                displayManager->showWiFiStatus();
+            }
+        }
+        
+        if (b.Button(H("display_show_system"), "Показать системную информацию")) {
+            if (displayManager) {
+                displayManager->showSystemInfo();
+            }
+        }
     }
 }
 
@@ -244,6 +331,86 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         }
     }
 
+}
+
+// Добавить реализацию метода buildSystemMonitorTab:
+void UIBuilder::buildSystemMonitorTab(sets::Builder& b) {
+    if (systemMonitor == nullptr) {
+        b.Label("System monitoring not available");
+        return;
+    }
+    
+    systemMonitor->update(); // Обновляем данные мониторинга
+    
+    {
+        sets::Group g(b, "CPU & Memory");
+        b.Label("CPU Usage: " + String(systemMonitor->getTotalCpuUsage()) + "%");
+        b.Label("Free Heap: " + String(systemMonitor->getFreeHeap() / 1024) + " kB");
+        b.Label("Min Free Heap: " + String(systemMonitor->getMinFreeHeap() / 1024) + " kB");
+    }
+    
+    {
+        sets::Group g(b, "Task Statistics");
+        
+        // Создаем HTML таблицу для отображения задач
+        String tableHtml = "<table style='width:100%;border-collapse:collapse;'>";
+        tableHtml += "<tr style='background:#333;color:white;'><th>Task</th><th>State</th><th>Priority</th><th>Stack</th><th>CPU%</th></tr>";
+        
+        // Получаем информацию о задачах
+        uint16_t taskCount = 0;
+        SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
+        
+        if (tasks != nullptr && taskCount > 0) {
+            for (uint16_t i = 0; i < taskCount; i++) {
+                // Определяем цвет строки в зависимости от загрузки CPU
+                String rowStyle;
+                if (tasks[i].cpuUsage > 50) {
+                    rowStyle = "background:#ffcccc;";  // Light red for high load
+                } else if (tasks[i].cpuUsage > 20) {
+                    rowStyle = "background:#ffffcc;";  // Light yellow for medium load
+                } else {
+                    rowStyle = "background:#ccffcc;";  // Light green for low load
+                }
+                
+                // Формируем строку таблицы
+                tableHtml += "<tr style='" + rowStyle + "'>";
+                tableHtml += "<td>" + String(tasks[i].name) + "</td>";
+                
+                // Определяем текстовое состояние
+                String state;
+                switch (tasks[i].state) {
+                    case eRunning:   state = "Running"; break;
+                    case eReady:     state = "Ready"; break;
+                    case eBlocked:   state = "Blocked"; break;
+                    case eSuspended: state = "Suspended"; break;
+                    case eDeleted:   state = "Deleted"; break;
+                    default:         state = "Unknown"; break;
+                }
+                
+                tableHtml += "<td>" + state + "</td>";
+                tableHtml += "<td>" + String(tasks[i].priority) + "</td>";
+                tableHtml += "<td>" + String(tasks[i].stackHighWater) + "</td>";
+                tableHtml += "<td>" + String(tasks[i].cpuUsage) + "%</td>";
+                tableHtml += "</tr>";
+            }
+            
+            // Освобождаем память
+            vPortFree(tasks);
+        } else {
+            tableHtml += "<tr><td colspan='5'>No task data available</td></tr>";
+        }
+        
+        tableHtml += "</table>";
+        
+        // Отображаем таблицу
+        b.HTML(H("tasksTable"), tableHtml);
+        
+        // Кнопка обновления
+        if (b.Button(H("refreshStats"), "Refresh Statistics")) {
+            systemMonitor->update();
+            b.reload();
+        }
+    }
 }
 
 // Проверка необходимости перезагрузки
