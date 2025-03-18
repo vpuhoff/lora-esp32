@@ -1,11 +1,19 @@
 #include "tasks.h"
 #include "led.h"
 #include "statistics.h"
+#include "plot-manager.h"
+#include "lora-manager.h" 
+#include <WiFi.h>
+#include <SettingsESPWS.h>
+
+// Объявление внешних переменных, используемых в задаче веб-интерфейса
+extern SettingsESPWS sett;
 
 void createTasks() {
     xTaskCreatePinnedToCore(taskSendHello, "SendHello", 3072, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(taskReceive, "Receive", 3072, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 1, NULL, 0);
 }
 
 void taskSendHello(void *parameter) {
@@ -90,5 +98,40 @@ void taskMonitorStack(void *parameter) {
         UBaseType_t freeStack = uxTaskGetStackHighWaterMark(NULL);
         Serial.printf("Free stack: %d bytes\n", freeStack);
         vTaskDelay(pdMS_TO_TICKS(10000));
+    }
+}
+
+// Задача для обработки веб-интерфейса
+void taskWebInterface(void *parameter) {
+    for (;;) {
+        sett.tick();
+        
+        // Обновление данных для графика каждые 500 мс
+        static uint32_t plotTimer = 0;
+        if (millis() - plotTimer >= 500) {
+            plotTimer = millis();
+            plotManager.updateData();
+        }
+        
+        // Периодическое обновление данных LoRa каждые 5000 мс
+        static uint32_t loraTimer = 0;
+        if (millis() - loraTimer >= 5000) {
+            loraTimer = millis();
+            loraManager->updateStats();
+        }
+        
+        // Периодическое логирование состояния системы каждые 10000 мс
+        static uint32_t logTimer = 0;
+        if (millis() - logTimer >= 10000) {
+            logTimer = millis();
+            if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
+                if (WiFi.status() == WL_CONNECTED) {
+                    logger.println("WiFi подключен к " + WiFi.SSID() + ", сигнал: " + String(WiFi.RSSI()) + " dBm");
+                }
+            }
+            logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
     }
 }

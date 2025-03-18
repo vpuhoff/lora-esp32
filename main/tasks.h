@@ -17,4 +17,7 @@ void taskReceive(void *parameter);
 // Задача мониторинга стека
 void taskMonitorStack(void *parameter);
 
+// Задача для обработки веб-интерфейса
+void taskWebInterface(void *parameter);
+
 #endif // TASKS_H

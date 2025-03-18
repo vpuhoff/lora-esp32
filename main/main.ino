@@ -38,41 +38,6 @@ void buildInterface(sets::Builder& b) {
     uiBuilder->buildInterface(b);
 }
 
-// Задача для обработки веб-интерфейса
-void taskWebInterface(void *parameter) {
-    for (;;) {
-        sett.tick();
-        
-        // Обновление данных для графика каждые 500 мс
-        static uint32_t plotTimer = 0;
-        if (millis() - plotTimer >= 500) {
-            plotTimer = millis();
-            plotManager.updateData();
-        }
-        
-        // Периодическое обновление данных LoRa каждые 5000 мс
-        static uint32_t loraTimer = 0;
-        if (millis() - loraTimer >= 5000) {
-            loraTimer = millis();
-            loraManager->updateStats();
-        }
-        
-        // Периодическое логирование состояния системы каждые 10000 мс
-        static uint32_t logTimer = 0;
-        if (millis() - logTimer >= 10000) {
-            logTimer = millis();
-            if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
-                if (WiFi.status() == WL_CONNECTED) {
-                    logger.println("WiFi подключен к " + WiFi.SSID() + ", сигнал: " + String(WiFi.RSSI()) + " dBm");
-                }
-            }
-            logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
-    }
-}
-
 void setup() {
     Serial.begin(115200);
     logger.println();
@@ -121,7 +86,6 @@ void setup() {
     loraMutex = xSemaphoreCreateMutex();
     
     // Создание задач
-    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 1, NULL, 0);
     createTasks();
     
     logger.println("Система инициализирована");
