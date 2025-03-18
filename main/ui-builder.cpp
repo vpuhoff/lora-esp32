@@ -2,6 +2,13 @@
 #include "statistics.h"
 #include "logging.h"
 
+static String sfOptions = "7;8;9;10;11;12";
+static int sfOptionsValues[] = {7, 8, 9, 10, 11, 12};
+static String bwOptions = "7.8;10.4;15.6;20.8;31.25;41.7;62.5;125;250;500";
+static float bwOptionsValues[] = {7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500};
+static String crOptions = "5;6;7;8";
+static int crOptionsValues[] = {5, 6, 7, 8};
+
 // Конструктор
 UIBuilder::UIBuilder(GyverDB* db) : _db(db), _needRestart(false) {
 }
@@ -187,18 +194,9 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
     {
         sets::Group g(b, "Настройки LoRa");
         
-        String sfOptions = "7;8;9;10;11;12";
         b.Select(DB_NAMESPACE::lora_spreading_selected, "Spreading Factor", sfOptions);
-        
-        String bwOptions = "7.8;10.4;15.6;20.8;31.25;41.7;62.5;125;250;500";
-        float bwOptionsValues[] = {7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500};
-
-        
         b.Select(DB_NAMESPACE::lora_bandwidth_selected, "Bandwidth (kHz)", bwOptions);
-        
-        String crOptions = "5;6;7;8";
         b.Select(DB_NAMESPACE::lora_coding_rate_selected, "Coding Rate (4/x)", crOptions);
-        
         b.Slider(DB_NAMESPACE::lora_max_attempts, "Макс. число попыток", 1.0f, 10.0f, 1.0f, "");
         b.Slider(DB_NAMESPACE::lora_tx_power, "Мощность передачи (dBm)", 2.0f, 20.0f, 1.0f, "");
 
@@ -247,7 +245,6 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
     }
 
 }
-
 
 // Проверка необходимости перезагрузки
 bool UIBuilder::needsRestart() const {
