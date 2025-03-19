@@ -182,26 +182,26 @@ void drawLoRaStatusPage(Adafruit_ST7735* display) {
     display->print(loraManager->getSuccessRate());
     display->print("%");
     
-    // Отображаем RSSI
-    display->setCursor(5, 70);
-    display->print("RSSI: ");
-    display->print(loraManager->getLastRssi(), 1);
-    display->print(" dBm");
+    // // Отображаем RSSI
+    // display->setCursor(5, 70);
+    // display->print("RSSI: ");
+    // display->print(loraManager->getLastRssi(), 1);
+    // display->print(" dBm");
     
     // Рисуем прогресс-бар для успешности доставки
     drawProgressBar(display, 5, 85, SCREEN_WIDTH - 10, 10, loraManager->getSuccessRate());
     
-    // График успешности доставки (используем данные из plotManager)
-    display->drawRect(5, 100, SCREEN_WIDTH - 10, 20, COLOR_TEXT);
+    // // График успешности доставки (используем данные из plotManager)
+    // display->drawRect(5, 100, SCREEN_WIDTH - 10, 20, COLOR_TEXT);
     
-    // Преобразуем данные для миниграфика
-    uint32_t graphData[20];  // Используем 20 последних точек
-    for (int i = 0; i < 20; i++) {
-        graphData[i] = 50;  // Заполняем значением по умолчанию
-    }
+    // // Преобразуем данные для миниграфика
+    // uint32_t graphData[20];  // Используем 20 последних точек
+    // for (int i = 0; i < 20; i++) {
+    //     graphData[i] = 50;  // Заполняем значением по умолчанию
+    // }
     
-    // Отрисовываем миниграфик
-    drawMiniGraph(display, 5, 100, SCREEN_WIDTH - 10, 20, graphData, 20);
+    // // Отрисовываем миниграфик
+    // drawMiniGraph(display, 5, 100, SCREEN_WIDTH - 10, 20, graphData, 20);
 }
 
 void drawWiFiStatusPage(Adafruit_ST7735* display) {
@@ -219,7 +219,7 @@ void drawWiFiStatusPage(Adafruit_ST7735* display) {
     
     // Разбиваем строку статуса на отдельные строки
     int startPos = 0;
-    int lineNum = 0;
+    int lineNum = 2;
     while (startPos < wifiStatus.length() && lineNum < 5) {
         int endPos = wifiStatus.indexOf('\n', startPos);
         if (endPos == -1) {
@@ -330,44 +330,44 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         uint16_t taskCount = 0;
         SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
         
-        if (tasks != nullptr && taskCount > 0) {
-            int y = 85;
+        // if (tasks != nullptr && taskCount > 0) {
+        //     int y = 85;
             
-            // Отображаем только 3 наиболее требовательные задачи
-            // Сортируем задачи по загрузке CPU
-            for (uint16_t i = 0; i < taskCount - 1; i++) {
-                for (uint16_t j = i + 1; j < taskCount; j++) {
-                    if (tasks[j].cpuUsage > tasks[i].cpuUsage) {
-                        // Свап
-                        SystemMonitor::TaskInfo temp = tasks[i];
-                        tasks[i] = tasks[j];
-                        tasks[j] = temp;
-                    }
-                }
-            }
+        //     // Отображаем только 3 наиболее требовательные задачи
+        //     // Сортируем задачи по загрузке CPU
+        //     for (uint16_t i = 0; i < taskCount - 1; i++) {
+        //         for (uint16_t j = i + 1; j < taskCount; j++) {
+        //             if (tasks[j].cpuUsage > tasks[i].cpuUsage) {
+        //                 // Свап
+        //                 SystemMonitor::TaskInfo temp = tasks[i];
+        //                 tasks[i] = tasks[j];
+        //                 tasks[j] = temp;
+        //             }
+        //         }
+        //     }
             
-            // Отображаем топ-3 задачи
-            for (uint16_t i = 0; i < taskCount && i < 3; i++) {
-                // Пропускаем системные задачи
-                if (strcmp(tasks[i].name, "IDLE") == 0 ||
-                    strncmp(tasks[i].name, "tiT", 3) == 0) {
-                    continue;
-                }
+        //     // Отображаем топ-3 задачи
+        //     for (uint16_t i = 0; i < taskCount && i < 3; i++) {
+        //         // Пропускаем системные задачи
+        //         if (strcmp(tasks[i].name, "IDLE") == 0 ||
+        //             strncmp(tasks[i].name, "tiT", 3) == 0) {
+        //             continue;
+        //         }
                 
-                display->setCursor(5, y);
-                display->print(tasks[i].name);
+        //         display->setCursor(5, y);
+        //         display->print(tasks[i].name);
                 
-                display->setCursor(80, y);
-                display->print(tasks[i].cpuUsage);
-                display->print("%");
+        //         display->setCursor(80, y);
+        //         display->print(tasks[i].cpuUsage);
+        //         display->print("%");
                 
-                y += 10;
-                if (y > 115) break;
-            }
+        //         y += 10;
+        //         if (y > 115) break;
+        //     }
             
-            // Освобождаем память
-            vPortFree(tasks);
-        }
+        //     // Освобождаем память
+        //     vPortFree(tasks);
+        // }
     } else {
         // Если системный монитор недоступен
         display->setCursor(5, 50);

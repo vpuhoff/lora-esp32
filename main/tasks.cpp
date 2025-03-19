@@ -164,6 +164,6 @@ void taskDisplayUpdate(void *parameter) {
             displayManager->tick();
             displayManager->updateCurrentPage();
         }
-        vTaskDelay(pdMS_TO_TICKS(50)); // Обновление каждые 50 мс
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Обновление каждые 50 мс
     }
 }

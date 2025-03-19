@@ -38,7 +38,7 @@ bool DisplayManager::setupDisplay() {
     _display->initR(INITR_144GREENTAB); // Используем initR вместо begin
 
     // Настройка дисплея
-    _display->setRotation(0);  // 0-3, поворот экрана
+    _display->setRotation(1);  // 0-3, поворот экрана
     _display->fillScreen(ST7735_BLACK);
     
     // Настройка подсветки, если используется управляемая подсветка
@@ -130,6 +130,12 @@ bool DisplayManager::isEnabled() const {
 void DisplayManager::nextPage() {
     if (_display != nullptr && _enabled) {
         _currentPage = static_cast<DisplayPage>((_currentPage + 1) % PAGE_COUNT);
+        
+        // Пропускаем страницу логов
+        if (_currentPage == PAGE_LOGS) {
+            _currentPage = static_cast<DisplayPage>((_currentPage + 1) % PAGE_COUNT);
+        }
+        
         _needUpdate = true;
     }
 }
@@ -137,9 +143,16 @@ void DisplayManager::nextPage() {
 void DisplayManager::prevPage() {
     if (_display != nullptr && _enabled) {
         _currentPage = static_cast<DisplayPage>(_currentPage == 0 ? PAGE_COUNT - 1 : _currentPage - 1);
+        
+        // Пропускаем страницу логов
+        if (_currentPage == PAGE_LOGS) {
+            _currentPage = static_cast<DisplayPage>(_currentPage == 0 ? PAGE_COUNT - 1 : _currentPage - 1);
+        }
+        
         _needUpdate = true;
     }
 }
+
 
 void DisplayManager::setPage(DisplayPage pageIndex) {
     if (pageIndex >= 0 && pageIndex < PAGE_COUNT) {
@@ -188,22 +201,11 @@ void DisplayManager::updateCurrentPage() {
                 DisplayUI::drawSystemInfoPage(_display);
                 break;
             case PAGE_LOGS:
-                // Получаем последние 5 строк лога
-                String logLines[5];
-                int lineCount = 0;
-                
-                // Здесь нужно получить последние строки лога из объекта logger
-                // Для простоты примера просто заполняем тестовыми данными
-                logLines[0] = "Лог 1: Система запущена";
-                logLines[1] = "Лог 2: WiFi подключен";
-                logLines[2] = "Лог 3: LoRa инициализирована";
-                logLines[3] = "Лог 4: Отправка пакета";
-                logLines[4] = "Лог 5: Получен ACK";
-                lineCount = 5;
-                
-                DisplayUI::drawLogsPage(_display, logLines, lineCount);
+                // Вместо отображения логов переключаемся на другую страницу
+                _currentPage = PAGE_SYSTEM_INFO; // или любую другую страницу
+                _needUpdate = true;
+                return; // Выходим из метода, чтобы при следующем вызове отобразить правильную страницу
                 break;
-
         }
         
         // Отрисовываем индикатор страниц
@@ -284,9 +286,12 @@ void DisplayManager::showSystemInfo() {
 
 void DisplayManager::showLogs() {
     if (_enabled && _display != nullptr) {
-        _currentPage = PAGE_LOGS;
-        _needUpdate = true;
-        updateCurrentPage();
+        // Вместо показа страницы логов отображаем сообщение
+        showInfo("Logs available in web interface", 2000);
+        
+        // НЕ устанавливаем текущую страницу как PAGE_LOGS
+        // _currentPage = PAGE_LOGS;
+        // _needUpdate = true;
     }
 }
 
