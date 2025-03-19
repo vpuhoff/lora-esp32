@@ -2,6 +2,7 @@
 #include <esp_system.h>
 #include <esp_heap_caps.h>
 #include <Arduino.h>
+#include <string.h>
 
 extern SystemMonitor* systemMonitor;
 
@@ -20,55 +21,45 @@ void SystemMonitor::update() {
     // Получаем количество задач
     _taskCount = uxTaskGetNumberOfTasks();
     
-    // Обновляем простую метрику CPU на основе статистики выполнения задач
+    // Обновляем метрику CPU, используя статистику FreeRTOS runtime stats
     updateCpuUsage();
     
     _lastUpdateTime = millis();
 }
 
 void SystemMonitor::updateCpuUsage() {
-    static uint32_t idleCycles = 0;
-    static uint32_t lastMeasurementTime = 0;
-    static uint32_t maxIdleCycles = 0;
-    static uint32_t totalSamples = 0;
-    
-    // We'll create a moving average window for our max idle cycles
-    // to adapt to changing system conditions
-    const uint32_t WINDOW_SIZE = 10;  // Number of samples to average
-    
-    // Only update once per second to avoid frequent calculations
-    if (millis() - lastMeasurementTime > 1000) {
-        // Calculate the load based on idle cycles
-        if (totalSamples > 0) {
-            // Use exponential moving average to smooth the max value
-            if (idleCycles > maxIdleCycles) {
-                maxIdleCycles = (idleCycles * 3 + maxIdleCycles * 7) / 10;
-            } else if (totalSamples > WINDOW_SIZE) {
-                // Gradually reduce maxIdleCycles if we're consistently seeing lower values
-                // This helps the system adapt if it becomes less busy
-                maxIdleCycles = (maxIdleCycles * 99) / 100;
-            }
-            
-            // Calculate CPU usage as percentage of max idle time observed
-            if (maxIdleCycles > 0) {
-                uint32_t idlePercentage = (idleCycles * 100) / maxIdleCycles;
-                _cpuUsageTotal = constrain(100 - idlePercentage, 0, 100);
-            }
-        } else {
-            // First measurement, establish baseline
-            maxIdleCycles = idleCycles;
-            _cpuUsageTotal = 0;
-        }
-        
-        totalSamples++;
-        idleCycles = 0;
-        lastMeasurementTime = millis();
-    } else {
-        // Increment idle cycle counter
-        idleCycles++;
+#if configGENERATE_RUN_TIME_STATS == 1
+    // Получаем массив информации о задачах
+    UBaseType_t taskCount = uxTaskGetNumberOfTasks();
+    TaskStatus_t* taskStatusArray = (TaskStatus_t*) pvPortMalloc(taskCount * sizeof(TaskStatus_t));
+    if (taskStatusArray == nullptr) {
+        _cpuUsageTotal = 0;
+        return;
     }
+    uint32_t totalRunTime = 0;
+    // Функция заполняет массив и возвращает суммарное время работы всех задач
+    taskCount = uxTaskGetSystemState(taskStatusArray, taskCount, &totalRunTime);
+    
+    uint32_t idleRunTime = 0;
+    // На ESP32 обычно два idle-задачи – суммируем время обеих
+    for (UBaseType_t i = 0; i < taskCount; i++) {
+        if (taskStatusArray[i].pcTaskName != nullptr &&
+          strstr(taskStatusArray[i].pcTaskName, "IDLE") != nullptr) {
+          idleRunTime += taskStatusArray[i].ulRunTimeCounter;
+      }
+    }
+    if (totalRunTime > 0) {
+        uint32_t idlePercentage = (idleRunTime * 100UL) / totalRunTime;
+        _cpuUsageTotal = constrain(100 - idlePercentage, 0, 100);
+    } else {
+        _cpuUsageTotal = 0;
+    }
+    vPortFree(taskStatusArray);
+#else
+    // Если статистика времени не включена, ставим 0%
+    _cpuUsageTotal = 0;
+#endif
 }
-
 
 String SystemMonitor::getFormattedTasksInfo() {
     String result = "Tasks: " + String(_taskCount) + "\n";
@@ -76,31 +67,26 @@ String SystemMonitor::getFormattedTasksInfo() {
     result += "Free Heap: " + String(_freeHeap / 1024) + " kB\n";
     result += "Min Free: " + String(_minFreeHeap / 1024) + " kB\n";
     
-    // Дополнительно можем собрать информацию о стеке текущей задачи
-    UBaseType_t currentTaskStack = uxTaskGetStackHighWaterMark(NULL);
-    result += "Current Task Stack: " + String(currentTaskStack) + " B\n";
+    // // Дополнительно: информация о стеке текущей задачи
+    // UBaseType_t currentTaskStack = uxTaskGetStackHighWaterMark(NULL);
+    // result += "Current Task Stack: " + String(currentTaskStack) + " B\n";
     
     return result;
 }
 
 SystemMonitor::TaskInfo* SystemMonitor::getTasksInfo(uint16_t& count) {
     // Возвращаем только один элемент
-    count = 1; // Важно! Устанавливаем count = 1, а не _taskCount
-    
+    count = 1;
     TaskInfo* taskInfoArray = (TaskInfo*)pvPortMalloc(sizeof(TaskInfo));
-    
     if (taskInfoArray != nullptr) {
-        // Заполняем информацией о системе в целом
         strncpy(taskInfoArray[0].name, "System", sizeof(taskInfoArray[0].name) - 1);
         taskInfoArray[0].name[sizeof(taskInfoArray[0].name) - 1] = '\0';
-        
         taskInfoArray[0].handle = NULL;
         taskInfoArray[0].priority = 0;
         taskInfoArray[0].stackHighWater = 0;
         taskInfoArray[0].state = eRunning;
         taskInfoArray[0].cpuUsage = _cpuUsageTotal;
     }
-    
     return taskInfoArray;
 }
 
@@ -117,8 +103,7 @@ uint32_t SystemMonitor::getMinFreeHeap() {
 }
 
 bool SystemMonitor::getTaskInfoByName(const char* taskName, TaskInfo& taskInfo) {
-    // В этой упрощенной реализации мы не можем получить информацию
-    // о конкретной задаче по имени без uxTaskGetSystemState
+    // В данной реализации не реализовано получение информации по имени
     return false;
 }
 
@@ -129,12 +114,11 @@ void SystemMonitor::logTasksStatistics() {
     logger.println("Free Heap: " + String(_freeHeap / 1024) + " kB");
     logger.println("Min Free Heap: " + String(_minFreeHeap / 1024) + " kB");
     
-    // Попробуем использовать vTaskList, если она доступна
 #if configUSE_STATS_FORMATTING_FUNCTIONS == 1
-    char buffer[500];
-    vTaskList(buffer);
-    logger.println("Task List:");
-    logger.println(buffer);
+    // char buffer[2500];
+    // vTaskList(buffer);
+    // Serial.println("Task List:");
+    // logger.println(buffer);
 #endif
 
     logger.println("-------------------------");
