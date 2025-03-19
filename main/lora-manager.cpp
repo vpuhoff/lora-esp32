@@ -20,7 +20,7 @@ void LoRaManager::applySettings() {
     
     logger.println("Применение настроек LoRa...");
     
-    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
+    if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(5000))) {
         logger.println(String("Spreading:") + _spreading);
         logger.println(String("Bandwidth:") + _bandwidth);
         logger.println(String("CodingRate:") + _codingRate);
@@ -29,7 +29,7 @@ void LoRaManager::applySettings() {
         LoRa.setSignalBandwidth(_bandwidth * 1000);
         LoRa.setCodingRate4(_codingRate);
         LoRa.setTxPower(_txPower);
-        xSemaphoreGive(loraMutex);
+        xSemaphoreGive(spi_lock_mutex);
         logger.println("Настройки LoRa применены");
     } else {
         logger.println(error_() + "Не удалось захватить мьютекс");

@@ -20,11 +20,17 @@ void UIBuilder::buildInterface(sets::Builder& b) {
         LoRaStatus,
         Logs,
         Settings,
-        Display,     // Добавляем вкладку дисплея
+        #if DISPLAY_ENABLED
+        Display,     // Вкладка дисплея только для ESP32
+        #endif
         SystemMonitor // Добавляем вкладку системного мониторинга
     } static tab;
 
+    #if DISPLAY_ENABLED
     if (b.Tabs("Dashboard;LoRa Status;Logs;Settings;Display;System", (uint8_t*)&tab)) {
+    #else
+    if (b.Tabs("Dashboard;LoRa Status;Logs;Settings;System", (uint8_t*)&tab)) {
+    #endif
         b.reload();
         return;
     }
@@ -42,9 +48,11 @@ void UIBuilder::buildInterface(sets::Builder& b) {
         case Tabs::Settings:
             buildSettingsTab(b);
             break;
-        case Tabs::Display:     // Обработка новой вкладки
+        #if DISPLAY_ENABLED
+        case Tabs::Display:
             buildDisplayTab(b);
             break;
+        #endif
         case Tabs::SystemMonitor: // Обработка вкладки мониторинга
             buildSystemMonitorTab(b);
             break;

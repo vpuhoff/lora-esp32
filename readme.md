@@ -5,7 +5,7 @@ This project implements a configurable LoRa communication system using either ES
 
 ## Supported Hardware
 - **Microcontrollers:** 
-  - ESP32
+  - ESP32 (DOIT ESP32 DEVKIT V1 recommended)
   - ESP32-S3 [WeAct ESP32-S3-A DevKitC-1](https://mischianti.org/weact-esp32-s3-a-devkitc-1-high-resolution-pinout-datasheet-and-specs/?ysclid=m81uskhvyj967706428)
 - **LoRa Module:** [SX1278](https://www.semtech.com/products/wireless-rf/lora-connect/sx1278)
 - **Display:** ST7735S 1.44" 128x128 LCD (SPI interface)
@@ -92,6 +92,22 @@ This project implements a configurable LoRa communication system using either ES
 - Status indicators (WiFi, LoRa, battery) in status bar
 - Information and error message pop-ups
 
+### Display Features
+- Adjustable brightness control
+- Power-saving display timeout
+- Auto-scroll functionality with configurable interval
+- Manual page navigation controls
+- Visual status indicators for WiFi and LoRa connections
+- Battery level indicator
+
+### System Monitoring
+- Real-time CPU usage statistics
+- Per-task CPU usage tracking with visual indicators
+- Memory usage and allocation monitoring
+- Dynamic stack usage monitoring for all tasks
+- Visual indication of resource-intensive tasks
+- Comprehensive task state monitoring (running, blocked, ready)
+
 ## Required Libraries
 - [LoRa](https://github.com/sandeepmistry/arduino-LoRa) - LoRa module control
 - [Adafruit_NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) - RGB LED control
@@ -103,6 +119,12 @@ This project implements a configurable LoRa communication system using either ES
 - [GTimer](https://github.com/GyverLibs/GTimer) - For timing operations
 - [Adafruit_GFX](https://github.com/adafruit/Adafruit-GFX-Library) - Graphics library
 - [Adafruit_ST7735](https://github.com/adafruit/Adafruit-ST7735-Library) - ST7735 LCD driver
+
+## Espressif Framework Requirements
+For proper system monitoring functionality, you need to install the Espressif framework:
+- Install Arduino-ESP32 using the [official Espressif documentation](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html#installing-using-arduino-ide)
+- For ESP32 (non-S3), use the "DOIT ESP32 DEVKIT V1" board setting in the Arduino IDE
+- Make sure to enable FreeRTOS task statistics in the configuration
 
 ## Installation
 

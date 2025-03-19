@@ -48,6 +48,9 @@ void buildInterface(sets::Builder& b) {
 void setup() {
     Serial.begin(115200);
     logger.println();
+
+    // Создание мьютекса для SPI
+    spi_lock_mutex = xSemaphoreCreateMutex();
     
     // Инициализация LED
     setupLed();
@@ -73,14 +76,17 @@ void setup() {
     displayManager->initDefaults(); // Инициализация настроек дисплея
     db.init(DB_NAMESPACE::log_level, LOG_INFO);
 
-    // Настройка дисплея
+    #if DISPLAY_ENABLED
+    displayManager = new DisplayManager(&db); // Создаем менеджер дисплея только для ESP32
+    // Инициализация дисплея
+    displayManager->initDefaults();
     if (displayManager->setupDisplay()) {
         displayManager->showLogo(); // Показываем заставку
         logger.println("Дисплей инициализирован успешно");
     } else {
         logger.println(error_() + "Ошибка инициализации дисплея");
     }
-    
+    #endif
     // Применение настроек WiFi
     wifiManager->applySettings();
     
@@ -88,9 +94,11 @@ void setup() {
     if (!setupLoRa()) {
         logger.println("LoRa init failed permanently.");
         logger.println("LoRa init failed permanently. Blinking indefinitely...");
+        #if DISPLAY_ENABLED
         if (displayManager->isEnabled()) {
             displayManager->showError("LoRa initialization failed!");
         }
+        #endif
         while (true) {
             blinkLED(1, 200);
         }
@@ -103,18 +111,19 @@ void setup() {
     sett.begin();
     sett.onBuild(buildInterface);
     
-    // Создание мьютекса для LoRa
-    loraMutex = xSemaphoreCreateMutex();
+    
     
     // Создание задач
     createTasks();
     
     logger.println("Система инициализирована");
 
+    #if DISPLAY_ENABLED
     // Показываем информационное сообщение на дисплее
     if (displayManager->isEnabled()) {
         displayManager->showInfo("System initialized successfully!", 3000);
     }
+    #endif
 }
 
 void loop() {

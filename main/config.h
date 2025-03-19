@@ -6,6 +6,15 @@
 // Не включаем LoRa.h здесь, чтобы избежать конфликта
 #include <Adafruit_NeoPixel.h>
 
+// Определение доступности дисплея в зависимости от типа платы
+#if defined(CONFIG_IDF_TARGET_ESP32)
+  #define DISPLAY_ENABLED 1
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  #define DISPLAY_ENABLED 0
+#else
+  #error "Unsupported ESP32 variant"
+#endif
+
 // LoRa configuration
 #define LORA_FREQUENCY    433E6
 #define LORA_SPREADING    12
@@ -15,10 +24,12 @@
 #define LORA_TX_POWER     10
 
 // Display configuration
-#define TFT_CS     5       // Вместо CS
-#define TFT_DC     16      // Вместо DC
-#define TFT_RESET  17      // Вместо RST
-#define TFT_LED    22      // Для управления подсветкой
+#if DISPLAY_ENABLED
+  #define TFT_CS     5       
+  #define TFT_DC     16      
+  #define TFT_RESET  17      
+  #define TFT_LED    22      // Для управления подсветкой
+#endif
 
 // Display defaults
 #define DISPLAY_DEFAULT_ENABLED     true
@@ -47,7 +58,7 @@
 #endif
 
 // Глобальные переменные, используемые в разных модулях
-extern SemaphoreHandle_t loraMutex;
+extern SemaphoreHandle_t spi_lock_mutex;
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 extern Adafruit_NeoPixel strip;
