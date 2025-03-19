@@ -69,11 +69,9 @@ String SystemMonitor::getFormattedTasksInfo() {
 }
 
 SystemMonitor::TaskInfo* SystemMonitor::getTasksInfo(uint16_t& count) {
-    // Поскольку мы не можем получить полный список задач,
-    // возвращаем только количество и общие метрики
-    count = _taskCount;
+    // Возвращаем только один элемент
+    count = 1; // Важно! Устанавливаем count = 1, а не _taskCount
     
-    // Создаем массив с одним элементом для общей информации
     TaskInfo* taskInfoArray = (TaskInfo*)pvPortMalloc(sizeof(TaskInfo));
     
     if (taskInfoArray != nullptr) {

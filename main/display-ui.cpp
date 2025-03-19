@@ -285,21 +285,21 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
     // Заголовок
     drawHeader(display, "System Info");
     
-    // Время работы
+    // Время работы (смещено на одну строку вниз)
     display->setTextColor(COLOR_TEXT);
     display->setTextSize(1);
-    display->setCursor(5, 25);  // Shifted down from 15
+    display->setCursor(5, 25); 
     display->print("Uptime: ");
     display->print(formatUptime(millis()));
     
     // Свободная память
-    display->setCursor(5, 35);  // Shifted down from 25
+    display->setCursor(5, 35); 
     display->print("Free RAM: ");
     display->print(ESP.getFreeHeap() / 1024);
     display->print(" kB");
     
     // Минимальная свободная память
-    display->setCursor(5, 45);  // Shifted down from 35
+    display->setCursor(5, 45); 
     display->print("Min Free: ");
     display->print(ESP.getMinFreeHeap() / 1024);
     display->print(" kB");
@@ -309,7 +309,7 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         systemMonitor->update();
         
         // Общая загрузка CPU
-        display->setCursor(5, 60);  // Shifted down from 50
+        display->setCursor(5, 60); 
         display->print("CPU Usage: ");
         display->print(systemMonitor->getTotalCpuUsage());
         display->print("%");
@@ -321,56 +321,49 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         if (cpuUsage > 80) cpuBarColor = COLOR_ERROR;
         else if (cpuUsage > 50) cpuBarColor = COLOR_WARNING;
         
-        drawProgressBar(display, 5, 70, SCREEN_WIDTH - 10, 10, cpuUsage, cpuBarColor);  // Shifted down from 60
+        drawProgressBar(display, 5, 70, SCREEN_WIDTH - 10, 10, cpuUsage, cpuBarColor); 
         
         // Отображаем информацию о задачах
-        display->setCursor(5, 85);  // Shifted down from 75
+        display->setCursor(5, 85); 
         display->print("Tasks:");
         
         uint16_t taskCount = 0;
         SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
         
-        // if (tasks != nullptr && taskCount > 0) {
-        //     int y = 85;
+        if (tasks != nullptr && taskCount > 0) {
+            int y = 95; 
             
-        //     // Отображаем только 3 наиболее требовательные задачи
-        //     // Сортируем задачи по загрузке CPU
-        //     for (uint16_t i = 0; i < taskCount - 1; i++) {
-        //         for (uint16_t j = i + 1; j < taskCount; j++) {
-        //             if (tasks[j].cpuUsage > tasks[i].cpuUsage) {
-        //                 // Свап
-        //                 SystemMonitor::TaskInfo temp = tasks[i];
-        //                 tasks[i] = tasks[j];
-        //                 tasks[j] = temp;
-        //             }
-        //         }
-        //     }
+            // Отображаем задачи (без попытки сортировки)
+            // Проходим по доступным задачам с проверкой границ
+            for (uint16_t i = 0; i < taskCount && i < 3; i++) {
+                // Пропускаем системные задачи, если есть больше одной задачи
+                if (taskCount > 1 && (strcmp(tasks[i].name, "IDLE") == 0 ||
+                    strncmp(tasks[i].name, "tiT", 3) == 0)) {
+                    continue;
+                }
+                
+                // Отображаем информацию о задаче
+                display->setCursor(5, y);
+                display->print(tasks[i].name);
+                
+                display->setCursor(80, y);
+                display->print(tasks[i].cpuUsage);
+                display->print("%");
+                
+                y += 10;
+                if (y > 125) break; 
+            }
             
-        //     // Отображаем топ-3 задачи
-        //     for (uint16_t i = 0; i < taskCount && i < 3; i++) {
-        //         // Пропускаем системные задачи
-        //         if (strcmp(tasks[i].name, "IDLE") == 0 ||
-        //             strncmp(tasks[i].name, "tiT", 3) == 0) {
-        //             continue;
-        //         }
-                
-        //         display->setCursor(5, y);
-        //         display->print(tasks[i].name);
-                
-        //         display->setCursor(80, y);
-        //         display->print(tasks[i].cpuUsage);
-        //         display->print("%");
-                
-        //         y += 10;
-        //         if (y > 115) break;
-        //     }
-            
-        //     // Освобождаем память
-        //     vPortFree(tasks);
-        // }
+            // Освобождаем память
+            vPortFree(tasks);
+        } else {
+            // Если не удалось получить информацию о задачах
+            display->setCursor(5, 95); /
+            display->print("Task data unavailable");
+        }
     } else {
         // Если системный монитор недоступен
-        display->setCursor(5, 60);  // Shifted down from 50
+        display->setCursor(5, 60); 
         display->print("CPU monitoring not available");
     }
 }
