@@ -53,25 +53,25 @@ String WiFiManager::getStatusText() {
     
     switch (WiFi.getMode()) {
         case WIFI_AP:
-            status = "Режим точки доступа (AP)";
+            status = "Access Point (AP) mode";
             break;
         case WIFI_STA:
             if (WiFi.status() == WL_CONNECTED) {
-                status = "Подключено к " + WiFi.SSID() + " (IP: " + WiFi.localIP().toString() + ")";
+                status = "Connected to " + WiFi.SSID() + " (IP: " + WiFi.localIP().toString() + ")";
             } else {
-                status = "Не подключено к WiFi";
+                status = "Not connected to WiFi";
             }
             break;
         case WIFI_AP_STA:
             if (WiFi.status() == WL_CONNECTED) {
-                status = "AP+STA: Подключено к " + WiFi.SSID() + " (IP: " + WiFi.localIP().toString() + ")";
+                status = "AP+STA: Connected to " + WiFi.SSID() + " (IP: " + WiFi.localIP().toString() + ")";
             } else {
-                status = "AP+STA: Точка доступа активна, нет подключения к WiFi";
+                status = "AP+STA: Access Point active, no WiFi connection";
             }
             status += "\nAP: " + String(WiFi.softAPSSID()) + " (IP: " + WiFi.softAPIP().toString() + ")";
             break;
         default:
-            status = "WiFi выключен";
+            status = "WiFi disabled";
     }
     
     return status;

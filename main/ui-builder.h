@@ -7,6 +7,8 @@
 #include "wifi-manager.h"
 #include "lora-manager.h"
 #include "plot-manager.h"
+#include "system-monitor.h"
+#include "display-manager.h"
 
 class UIBuilder {
 public:
@@ -18,6 +20,9 @@ private:
     void buildLogsTab(sets::Builder& b);
     void buildLoRaStatusTab(sets::Builder& b);
     void buildSettingsTab(sets::Builder& b);
+    void buildDisplayTab(sets::Builder& b); // Добавляем новый метод
+    void buildSystemMonitorTab(sets::Builder& b); // Добавляем метод для мониторинга системы
+
     GyverDB* _db;
     bool _needRestart;
 };
