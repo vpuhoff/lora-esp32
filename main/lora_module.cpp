@@ -5,11 +5,14 @@ bool setupLoRa() {
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
     logger.println("Initializing LoRa...");
     int attempts = 0;
-    while (!LoRa.begin(LORA_FREQUENCY) && attempts < LORA_MAX_ATTEMPTS) {
-        logger.println("LoRa init failed, retrying...");
-        blinkLED(2, 200);
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        attempts++;
+    if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(10000))) {
+        while (!LoRa.begin(LORA_FREQUENCY) && attempts < LORA_MAX_ATTEMPTS) {
+            logger.println("LoRa init failed, retrying...");
+            blinkLED(2, 200);
+            vTaskDelay(pdMS_TO_TICKS(10000));
+            attempts++;
+        }
+        xSemaphoreGive(spi_lock_mutex);
     }
     
     if (attempts == LORA_MAX_ATTEMPTS) {

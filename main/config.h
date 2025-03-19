@@ -47,7 +47,7 @@
 #endif
 
 // Глобальные переменные, используемые в разных модулях
-extern SemaphoreHandle_t loraMutex;
+extern SemaphoreHandle_t spi_lock_mutex;
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 extern Adafruit_NeoPixel strip;

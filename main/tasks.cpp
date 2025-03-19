@@ -26,7 +26,7 @@ void createTasks() {
 
 void taskSendHello(void *parameter) {
     while (true) {
-        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(4000))) {
+        if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(4000))) {
             int currentPacketId = packetId++;
             
             uint32_t startTime = millis();
@@ -34,7 +34,7 @@ void taskSendHello(void *parameter) {
             LoRa.print("HLO:");
             LoRa.print(currentPacketId); // Отправляем ID пакета
             LoRa.endPacket();
-            xSemaphoreGive(loraMutex);
+            xSemaphoreGive(spi_lock_mutex);
 
             uint32_t duration = millis() - startTime;
             Serial.printf("Hello packet %d sent, transmission time: %u ms\n", 
@@ -50,7 +50,7 @@ void taskSendHello(void *parameter) {
 
 void taskReceive(void *parameter) {
     for (;;) {
-        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
+        if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(5000))) {
             int packetSize = LoRa.parsePacket();
 
             if (packetSize) {
@@ -75,24 +75,25 @@ void taskReceive(void *parameter) {
                     LoRa.print("ACK:");
                     LoRa.print(receivedId); // Отправляем ID пакета в ACK
                     LoRa.endPacket();
-                    xSemaphoreGive(loraMutex);
+                    xSemaphoreGive(spi_lock_mutex);
                     uint32_t duration = millis() - startTime;
                     Serial.printf("ACK packet sent, transmission time: %u ms\n", duration);
                     blinkLED(2, 1000, 0, 255, 0); // Зелёный
                 } else if (incoming.startsWith("ACK:")) {
+                    xSemaphoreGive(spi_lock_mutex);
                     // Получили подтверждение
                     int ackId = incoming.substring(4).toInt();
                     Serial.printf("ACK received for packet %d!\n", ackId);
-                    
+
                     // Обновляем статистику только для этого пакета
                     updatePacketStatus(ackId, true);
-                    xSemaphoreGive(loraMutex);
+                    
                     blinkLED(2, 1000, 0, 0, 255); // Синий
                 } else {
-                    xSemaphoreGive(loraMutex);
+                    xSemaphoreGive(spi_lock_mutex);
                 }
             } else {
-                xSemaphoreGive(loraMutex);
+                xSemaphoreGive(spi_lock_mutex);
             }
         } else {
           logger.println("Failed to acquire mutex for receive!");
