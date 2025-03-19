@@ -34,25 +34,32 @@ bool DisplayManager::setupDisplay() {
     // Используем разные имена для пинов, чтобы избежать конфликта с существующими макросами
     _display = new Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RESET);
     
-    // Инициализируем дисплей
-    _display->initR(INITR_144GREENTAB); // Используем initR вместо begin
+    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(5000))) {
+        // Инициализируем дисплей
+        _display->initR(INITR_144GREENTAB); // Используем initR вместо begin
 
-    // Настройка дисплея
-    _display->setRotation(1);  // 0-3, поворот экрана
-    _display->fillScreen(ST7735_BLACK);
-    
-    // Настройка подсветки, если используется управляемая подсветка
-    #ifdef TFT_LED
-    pinMode(TFT_LED, OUTPUT);
-    setBrightness(_brightness);
-    #endif
-    
-    logger.println(info_() + "Инициализация дисплея выполнена успешно");
-    
-    // Показываем стартовый экран
-    showLogo();
-    
-    return true;
+        // Настройка дисплея
+        _display->setRotation(1);  // 0-3, поворот экрана
+        _display->fillScreen(ST7735_BLACK);
+        
+        xSemaphoreGive(loraMutex);
+        
+        // Настройка подсветки, если используется управляемая подсветка
+        #ifdef TFT_LED
+        pinMode(TFT_LED, OUTPUT);
+        setBrightness(_brightness);
+        #endif
+        
+        logger.println(info_() + "Инициализация дисплея выполнена успешно");
+        
+        // Показываем стартовый экран
+        showLogo();
+        
+        return true;
+    } else {
+        logger.println(error_() + "Не удалось получить мьютекс для инициализации дисплея");
+        return false;
+    }
 }
 
 void DisplayManager::initDefaults() {
@@ -187,50 +194,61 @@ void DisplayManager::updateCurrentPage() {
         _lastUpdateTime = millis();
         lastPartialUpdate = millis();
         
-        // Clear screen before redrawing
-        _display->fillScreen(ST7735_BLACK);
-        
-        // Draw page content based on the current page
-        switch (_currentPage) {
-            case PAGE_LOGO:
-                DisplayUI::drawLogoPage(_display);
-                break;
-            case PAGE_LORA_STATUS:
-                DisplayUI::drawLoRaStatusPage(_display);
-                break;
-            case PAGE_WIFI_STATUS:
-                DisplayUI::drawWiFiStatusPage(_display);
-                break;
-            case PAGE_SYSTEM_INFO:
-                DisplayUI::drawSystemInfoPage(_display);
-                break;
-            case PAGE_LOGS:
-                _currentPage = PAGE_SYSTEM_INFO;
-                _needUpdate = true;
-                return;
+        // Получаем мьютекс для работы с SPI
+        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(500))) {
+            // Clear screen before redrawing
+            _display->fillScreen(ST7735_BLACK);
+            
+            // Draw page content based on the current page
+            switch (_currentPage) {
+                case PAGE_LOGO:
+                    DisplayUI::drawLogoPage(_display);
+                    break;
+                case PAGE_LORA_STATUS:
+                    DisplayUI::drawLoRaStatusPage(_display);
+                    break;
+                case PAGE_WIFI_STATUS:
+                    DisplayUI::drawWiFiStatusPage(_display);
+                    break;
+                case PAGE_SYSTEM_INFO:
+                    DisplayUI::drawSystemInfoPage(_display);
+                    break;
+                case PAGE_LOGS:
+                    _currentPage = PAGE_SYSTEM_INFO;
+                    _needUpdate = true;
+                    xSemaphoreGive(loraMutex);  // Освобождаем мьютекс перед выходом
+                    return;
+            }
+            
+            // Draw page indicator and status bar
+            DisplayUI::drawPageIndicator(_display, PAGE_COUNT, _currentPage);
+            
+            bool wifiConnected = WiFi.status() == WL_CONNECTED;
+            bool loraActive = true;
+            DisplayUI::drawStatusBar(_display, wifiConnected, loraActive);
+            
+            // Освобождаем мьютекс после работы с SPI
+            xSemaphoreGive(loraMutex);
+        } else {
+            logger.println(error_() + "Не удалось получить мьютекс для обновления дисплея");
         }
-        
-        // Draw page indicator and status bar
-        DisplayUI::drawPageIndicator(_display, PAGE_COUNT, _currentPage);
-        
-        bool wifiConnected = WiFi.status() == WL_CONNECTED;
-        bool loraActive = true;
-        DisplayUI::drawStatusBar(_display, wifiConnected, loraActive);
     }
     // Check if we need a partial update (just updating dynamic content)
     else if (millis() - lastPartialUpdate > 1000) {
         lastPartialUpdate = millis();
         
-        // Only update dynamic parts of the current page
-        // For example, just update time in status bar without redrawing everything
-        switch (_currentPage) {
-            case PAGE_SYSTEM_INFO:
-                // Just update the CPU/memory values without redrawing the entire page
-                // This would require changes to DisplayUI to support partial updates
-                break;
-            case PAGE_LORA_STATUS:
-                // Update only the changing stats
-                break;
+        // Partial updates should also be protected with mutex
+        if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(200))) {
+            // Only update dynamic parts of the current page
+            switch (_currentPage) {
+                case PAGE_SYSTEM_INFO:
+                    // Just update the CPU/memory values without redrawing the entire page
+                    break;
+                case PAGE_LORA_STATUS:
+                    // Update only the changing stats
+                    break;
+            }
+            xSemaphoreGive(loraMutex);
         }
     }
     
@@ -252,8 +270,13 @@ void DisplayManager::showInfo(String text, int duration) {
     _tempMessageDuration = duration;
     _isError = false;
     
-    _display->fillScreen(ST7735_BLACK);
-    DisplayUI::drawInfoMessage(_display, _tempMessage);
+    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(500))) {
+        _display->fillScreen(ST7735_BLACK);
+        DisplayUI::drawInfoMessage(_display, _tempMessage);
+        xSemaphoreGive(loraMutex);
+    } else {
+        logger.println(error_() + "Не удалось получить мьютекс для showInfo");
+    }
 }
 
 void DisplayManager::showError(String text, int duration) {
@@ -266,8 +289,13 @@ void DisplayManager::showError(String text, int duration) {
     _tempMessageDuration = duration;
     _isError = true;
     
-    _display->fillScreen(ST7735_BLACK);
-    DisplayUI::drawErrorMessage(_display, _tempMessage);
+    if (xSemaphoreTake(loraMutex, pdMS_TO_TICKS(500))) {
+        _display->fillScreen(ST7735_BLACK);
+        DisplayUI::drawErrorMessage(_display, _tempMessage);
+        xSemaphoreGive(loraMutex);
+    } else {
+        logger.println(error_() + "Не удалось получить мьютекс для showError");
+    }
 }
 
 void DisplayManager::showLogo() {
