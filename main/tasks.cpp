@@ -12,10 +12,15 @@
 extern SettingsESPWS sett;
 
 void createTasks() {
-    xTaskCreatePinnedToCore(taskSendHello, "SendHello", 3072, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(taskReceive, "Receive", 3072, NULL, 1, NULL, 1);
+    // LoRa-related tasks on Core 1
+    xTaskCreatePinnedToCore(taskSendHello, "SendHello", 3072, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(taskReceive, "Receive", 3072, NULL, 3, NULL, 1);
+    
+    // Lower priority for monitoring tasks
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 1, NULL, 0);
+    
+    // UI and display tasks on Core 0 with appropriate priorities
+    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
 }
 
@@ -164,6 +169,6 @@ void taskDisplayUpdate(void *parameter) {
             displayManager->tick();
             displayManager->updateCurrentPage();
         }
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Обновление каждые 50 мс
+        vTaskDelay(pdMS_TO_TICKS(10)); // Обновление каждые 50 мс
     }
 }

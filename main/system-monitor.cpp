@@ -27,33 +27,48 @@ void SystemMonitor::update() {
 }
 
 void SystemMonitor::updateCpuUsage() {
-    // Метод на основе vTaskDelay - это очень упрощенный подход
     static uint32_t idleCycles = 0;
     static uint32_t lastMeasurementTime = 0;
-    static uint32_t maxIdleCycles = 10000; // Начальное предполагаемое максимальное значение
+    static uint32_t maxIdleCycles = 0;
+    static uint32_t totalSamples = 0;
     
-    // Используем задачу холостого хода (IDLE task) как референс загрузки
-    // Когда загрузка высока, IDLE task выполняется реже
-    uint32_t currentIdleTicks = xTaskGetTickCount();
+    // We'll create a moving average window for our max idle cycles
+    // to adapt to changing system conditions
+    const uint32_t WINDOW_SIZE = 10;  // Number of samples to average
     
-    if (millis() - lastMeasurementTime > 1000) { // Измеряем раз в секунду
-        // Расчет примерной загрузки CPU
-        // Чем больше idleCycles, тем ниже загрузка CPU
-        if (idleCycles > maxIdleCycles) {
-            maxIdleCycles = idleCycles; // Обновляем максимум, если нашли больше
+    // Only update once per second to avoid frequent calculations
+    if (millis() - lastMeasurementTime > 1000) {
+        // Calculate the load based on idle cycles
+        if (totalSamples > 0) {
+            // Use exponential moving average to smooth the max value
+            if (idleCycles > maxIdleCycles) {
+                maxIdleCycles = (idleCycles * 3 + maxIdleCycles * 7) / 10;
+            } else if (totalSamples > WINDOW_SIZE) {
+                // Gradually reduce maxIdleCycles if we're consistently seeing lower values
+                // This helps the system adapt if it becomes less busy
+                maxIdleCycles = (maxIdleCycles * 99) / 100;
+            }
+            
+            // Calculate CPU usage as percentage of max idle time observed
+            if (maxIdleCycles > 0) {
+                uint32_t idlePercentage = (idleCycles * 100) / maxIdleCycles;
+                _cpuUsageTotal = constrain(100 - idlePercentage, 0, 100);
+            }
+        } else {
+            // First measurement, establish baseline
+            maxIdleCycles = idleCycles;
+            _cpuUsageTotal = 0;
         }
         
-        // Вычисляем процент загрузки (инвертированный от холостого времени)
-        _cpuUsageIdle = 100 - ((idleCycles * 100) / maxIdleCycles);
-        _cpuUsageTotal = constrain(_cpuUsageIdle, 0, 100);
-        
+        totalSamples++;
         idleCycles = 0;
         lastMeasurementTime = millis();
     } else {
-        // Увеличиваем счетчик холостых циклов
+        // Increment idle cycle counter
         idleCycles++;
     }
 }
+
 
 String SystemMonitor::getFormattedTasksInfo() {
     String result = "Tasks: " + String(_taskCount) + "\n";

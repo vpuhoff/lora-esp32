@@ -124,5 +124,5 @@ void loop() {
             .update(H("logger"), logger);
             //.update(H(lbl2), random(100));
     }
-    vTaskDelay(1000);
+    vTaskDelay(50);
 }

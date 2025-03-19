@@ -170,23 +170,27 @@ void DisplayManager::updateCurrentPage() {
         return;
     }
     
-    // Проверяем, есть ли временное сообщение для отображения
+    // Check if we need to show a temporary message
     if (_tempMessageTime > 0 && millis() - _tempMessageTime < _tempMessageDuration) {
-        return;  // Продолжаем показывать временное сообщение
+        return;  // Continue showing temporary message
     } else if (_tempMessageTime > 0) {
-        _tempMessageTime = 0;  // Сбрасываем временное сообщение
-        _needUpdate = true;    // Обновляем страницу
+        _tempMessageTime = 0;  // Reset temporary message
+        _needUpdate = true;    // Force update of page
     }
     
-    // Проверяем необходимость обновления
-    if (_needUpdate || millis() - _lastUpdateTime > 1000) {  // Обновляем страницу не чаще 1 раза в секунду
+    // Only update when needed or on a timer
+    static uint32_t lastPartialUpdate = 0;
+    
+    // Check if we need a full update
+    if (_needUpdate) {
         _needUpdate = false;
         _lastUpdateTime = millis();
+        lastPartialUpdate = millis();
         
-        // Очищаем экран перед отрисовкой
+        // Clear screen before redrawing
         _display->fillScreen(ST7735_BLACK);
         
-        // Отрисовываем содержимое в зависимости от текущей страницы
+        // Draw page content based on the current page
         switch (_currentPage) {
             case PAGE_LOGO:
                 DisplayUI::drawLogoPage(_display);
@@ -201,28 +205,42 @@ void DisplayManager::updateCurrentPage() {
                 DisplayUI::drawSystemInfoPage(_display);
                 break;
             case PAGE_LOGS:
-                // Вместо отображения логов переключаемся на другую страницу
-                _currentPage = PAGE_SYSTEM_INFO; // или любую другую страницу
+                _currentPage = PAGE_SYSTEM_INFO;
                 _needUpdate = true;
-                return; // Выходим из метода, чтобы при следующем вызове отобразить правильную страницу
-                break;
+                return;
         }
         
-        // Отрисовываем индикатор страниц
+        // Draw page indicator and status bar
         DisplayUI::drawPageIndicator(_display, PAGE_COUNT, _currentPage);
         
-        // Отрисовываем статус-бар
         bool wifiConnected = WiFi.status() == WL_CONNECTED;
-        bool loraActive = true;  // Можно использовать реальное состояние LoRa
+        bool loraActive = true;
         DisplayUI::drawStatusBar(_display, wifiConnected, loraActive);
     }
+    // Check if we need a partial update (just updating dynamic content)
+    else if (millis() - lastPartialUpdate > 1000) {
+        lastPartialUpdate = millis();
+        
+        // Only update dynamic parts of the current page
+        // For example, just update time in status bar without redrawing everything
+        switch (_currentPage) {
+            case PAGE_SYSTEM_INFO:
+                // Just update the CPU/memory values without redrawing the entire page
+                // This would require changes to DisplayUI to support partial updates
+                break;
+            case PAGE_LORA_STATUS:
+                // Update only the changing stats
+                break;
+        }
+    }
     
-    // Проверяем необходимость автоматического переключения страниц
+    // Check for auto-scroll
     if (_autoScroll && millis() - _lastScrollTime > _scrollInterval) {
         _lastScrollTime = millis();
         nextPage();
     }
 }
+
 
 void DisplayManager::showInfo(String text, int duration) {
     if (!_enabled || _display == nullptr) {

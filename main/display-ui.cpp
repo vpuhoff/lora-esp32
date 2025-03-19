@@ -358,7 +358,7 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
             vPortFree(tasks);
         } else {
             // Если не удалось получить информацию о задачах
-            display->setCursor(5, 95); /
+            display->setCursor(5, 95); 
             display->print("Task data unavailable");
         }
     } else {
