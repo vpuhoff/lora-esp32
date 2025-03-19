@@ -48,6 +48,9 @@ void buildInterface(sets::Builder& b) {
 void setup() {
     Serial.begin(115200);
     logger.println();
+
+    // Создание мьютекса для SPI
+    spi_lock_mutex = xSemaphoreCreateMutex();
     
     // Инициализация LED
     setupLed();
@@ -103,8 +106,7 @@ void setup() {
     sett.begin();
     sett.onBuild(buildInterface);
     
-    // Создание мьютекса для LoRa
-    loraMutex = xSemaphoreCreateMutex();
+    
     
     // Создание задач
     createTasks();
