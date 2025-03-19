@@ -32,6 +32,7 @@ DisplayManager::~DisplayManager() {
 bool DisplayManager::setupDisplay() {
     // Инициализация дисплея
     // Используем разные имена для пинов, чтобы избежать конфликта с существующими макросами
+    #if DISPLAY_ENABLED
     _display = new Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RESET);
     
     if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(10000))) {
@@ -59,7 +60,7 @@ bool DisplayManager::setupDisplay() {
         logger.println(error_() + "Не удалось захватить мьютекс для инициализации дисплея");
         return false;
     }
-    
+    #endif
     return true;
 }
 

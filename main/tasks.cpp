@@ -21,7 +21,10 @@ void createTasks() {
     
     // UI and display tasks on Core 0 with appropriate priorities
     xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 2, NULL, 0);
+    #if DISPLAY_ENABLED
+    // Задача обновления дисплея только для ESP32
     xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
+    #endif
 }
 
 void taskSendHello(void *parameter) {
