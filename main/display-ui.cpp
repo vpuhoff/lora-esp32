@@ -140,8 +140,8 @@ void drawLoRaStatusPage(Adafruit_ST7735* display) {
     drawHeader(display, "LoRa Status");
     
     if (loraManager == nullptr) {
-        drawCenteredText(display, 60, "LoRa Manager", COLOR_TEXT);
-        drawCenteredText(display, 70, "not available", COLOR_ERROR);
+        drawCenteredText(display, 70, "LoRa Manager", COLOR_TEXT);  // Shifted down from 60
+        drawCenteredText(display, 80, "not available", COLOR_ERROR); // Shifted down from 70
         return;
     }
     
@@ -149,35 +149,35 @@ void drawLoRaStatusPage(Adafruit_ST7735* display) {
     display->setTextColor(COLOR_TEXT);
     display->setTextSize(1);
     
-    display->setCursor(5, 15);
+    display->setCursor(5, 25);  // Shifted down from 15
     display->print("SF: ");
     display->print(loraManager->getSpreadingFactor());
     
-    display->setCursor(50, 15);
+    display->setCursor(50, 25);  // Shifted down from 15
     display->print("BW: ");
     display->print(loraManager->getBandwidth());
     display->print(" kHz");
     
-    display->setCursor(5, 25);
+    display->setCursor(5, 35);  // Shifted down from 25
     display->print("CR: 4/");
     display->print(loraManager->getCodingRate());
     
-    display->setCursor(50, 25);
+    display->setCursor(50, 35);  // Shifted down from 25
     display->print("TX: ");
     display->print(loraManager->getTxPower());
     display->print(" dBm");
     
     // Статистика пакетов
-    display->setCursor(5, 40);
+    display->setCursor(5, 50);  // Shifted down from 40
     display->print("Packets: ");
     display->print(loraManager->getPacketsTotal());
     
-    display->setCursor(5, 50);
+    display->setCursor(5, 60);  // Shifted down from 50
     display->print("Delivered: ");
     display->print(loraManager->getPacketsSuccess());
     
     // Процент успешной доставки
-    display->setCursor(5, 60);
+    display->setCursor(5, 70);  // Shifted down from 60
     display->print("Success rate: ");
     display->print(loraManager->getSuccessRate());
     display->print("%");
@@ -189,7 +189,7 @@ void drawLoRaStatusPage(Adafruit_ST7735* display) {
     // display->print(" dBm");
     
     // Рисуем прогресс-бар для успешности доставки
-    drawProgressBar(display, 5, 85, SCREEN_WIDTH - 10, 10, loraManager->getSuccessRate());
+    drawProgressBar(display, 5, 95, SCREEN_WIDTH - 10, 10, loraManager->getSuccessRate());  // Shifted down from 85
     
     // // График успешности доставки (используем данные из plotManager)
     // display->drawRect(5, 100, SCREEN_WIDTH - 10, 20, COLOR_TEXT);
@@ -219,7 +219,7 @@ void drawWiFiStatusPage(Adafruit_ST7735* display) {
     
     // Разбиваем строку статуса на отдельные строки
     int startPos = 0;
-    int lineNum = 2;
+    int lineNum = 1;
     while (startPos < wifiStatus.length() && lineNum < 5) {
         int endPos = wifiStatus.indexOf('\n', startPos);
         if (endPos == -1) {
@@ -288,18 +288,18 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
     // Время работы
     display->setTextColor(COLOR_TEXT);
     display->setTextSize(1);
-    display->setCursor(5, 15);
+    display->setCursor(5, 25);  // Shifted down from 15
     display->print("Uptime: ");
     display->print(formatUptime(millis()));
     
     // Свободная память
-    display->setCursor(5, 25);
+    display->setCursor(5, 35);  // Shifted down from 25
     display->print("Free RAM: ");
     display->print(ESP.getFreeHeap() / 1024);
     display->print(" kB");
     
     // Минимальная свободная память
-    display->setCursor(5, 35);
+    display->setCursor(5, 45);  // Shifted down from 35
     display->print("Min Free: ");
     display->print(ESP.getMinFreeHeap() / 1024);
     display->print(" kB");
@@ -309,7 +309,7 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         systemMonitor->update();
         
         // Общая загрузка CPU
-        display->setCursor(5, 50);
+        display->setCursor(5, 60);  // Shifted down from 50
         display->print("CPU Usage: ");
         display->print(systemMonitor->getTotalCpuUsage());
         display->print("%");
@@ -321,10 +321,10 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         if (cpuUsage > 80) cpuBarColor = COLOR_ERROR;
         else if (cpuUsage > 50) cpuBarColor = COLOR_WARNING;
         
-        drawProgressBar(display, 5, 60, SCREEN_WIDTH - 10, 10, cpuUsage, cpuBarColor);
+        drawProgressBar(display, 5, 70, SCREEN_WIDTH - 10, 10, cpuUsage, cpuBarColor);  // Shifted down from 60
         
         // Отображаем информацию о задачах
-        display->setCursor(5, 75);
+        display->setCursor(5, 85);  // Shifted down from 75
         display->print("Tasks:");
         
         uint16_t taskCount = 0;
@@ -370,7 +370,7 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         // }
     } else {
         // Если системный монитор недоступен
-        display->setCursor(5, 50);
+        display->setCursor(5, 60);  // Shifted down from 50
         display->print("CPU monitoring not available");
     }
 }
