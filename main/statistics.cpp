@@ -13,12 +13,14 @@ void updateStats(bool success) {
     totalSent++;
     if (success) totalReceived++;
 
-    float newValue = success ? 100.0 : 0.0;
-    successRateSmoothed = (ALPHA * newValue) + ((1 - ALPHA) * successRateSmoothed);
+    // Вычисляем текущую успешность доставки в процентах
+    float currentSuccessRate = (totalReceived * 100.0) / totalSent;
+    
+    // Применяем сглаживание с использованием EWMA
+    successRateSmoothed = (ALPHA * currentSuccessRate) + ((1 - ALPHA) * successRateSmoothed);
 
-    float totalSuccessRate = (totalReceived / (float)totalSent) * 100.0;
     Serial.printf("Smoothed success rate: %.2f%% | Overall success rate: %.2f%% (%d/%d)\n", 
-                  successRateSmoothed, totalSuccessRate, totalReceived, totalSent);
+                  successRateSmoothed, currentSuccessRate, totalReceived, totalSent);
 }
 
 void updatePacketStatus(int id, bool success) {
@@ -34,7 +36,10 @@ void updatePacketStatus(int id, bool success) {
         totalReceived = received;
         totalSent = packetId;
         
-        float successRate = (totalReceived / (float)totalSent) * 100.0;
+        // Обновляем сглаженную статистику после пересчета
+        float successRate = (totalReceived * 100.0) / totalSent;
+        successRateSmoothed = (ALPHA * successRate) + ((1 - ALPHA) * successRateSmoothed);
+        
         Serial.printf("Updated overall success rate: %.2f%% (%d/%d)\n", 
                       successRate, totalReceived, totalSent);
     }
