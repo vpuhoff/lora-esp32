@@ -3,12 +3,16 @@
 ## Description
 This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
 
+> **Important Note:**  
+> Display functionality (ST7735S LCD) is enabled only on ESP32 boards. For ESP32-S3 boards the display is currently disabled **only because a second display is not available for testing yet**. This is a temporary limitation and may be revisited in future revisions.
+
 ## Supported Hardware
 - **Microcontrollers:** 
   - ESP32 (DOIT ESP32 DEVKIT V1 recommended)
   - ESP32-S3 [WeAct ESP32-S3-A DevKitC-1](https://mischianti.org/weact-esp32-s3-a-devkitc-1-high-resolution-pinout-datasheet-and-specs/?ysclid=m81uskhvyj967706428)
 - **LoRa Module:** [SX1278](https://www.semtech.com/products/wireless-rf/lora-connect/sx1278)
-- **Display:** ST7735S 1.44" 128x128 LCD (SPI interface)
+- **Display:** ST7735S 1.44" 128x128 LCD (SPI interface)  
+  *(Note: Only supported on ESP32 boards. For ESP32-S3 boards, the display is disabled only due to the lack of a second display for testing.)*
 - **Charging Module:** [TP4056](http://kungur.hldns.ru/pdf/TP4056.pdf)
 - **Battery:** [Nokia BL-4C](https://www.wildberries.by/catalog/16442322/detail.aspx)
 - **Case:** [3d printed](https://www.thingiverse.com/thing:6973923)
@@ -54,6 +58,8 @@ This project implements a configurable LoRa communication system using either ES
 | CS      | GPIO5 (TFT_CS) |
 | BLK     | GPIO22 (TFT_LED) or 3.3V |
 
+*Note: There is no display wiring for ESP32-S3 as the LCD display is disabled on that platform.*
+
 ## Features
 
 ### Core Functionality
@@ -62,7 +68,7 @@ This project implements a configurable LoRa communication system using either ES
 - Multi-core task management (LoRa operations on Core 1, Web interface on Core 0)
 - Configurable system parameters via web interface
 - Visual feedback via LED/RGB indicators for system status
-- LCD display for real-time information and status monitoring
+- LCD display for real-time information and status monitoring *(only on ESP32 boards)*
 - CPU and memory usage monitoring with detailed task statistics
 
 ### LoRa Configuration
@@ -78,11 +84,11 @@ This project implements a configurable LoRa communication system using either ES
 - Comprehensive system logs with adjustable detail levels
 - WiFi configuration supporting three modes: AP, STA, or AP+STA
 - Visual indicators for system status and packet delivery success
-- Display configuration and control options
+- Display configuration and control options *(Note: Display settings affect only ESP32 boards)*
 - System resource monitoring and task statistics
 
 ### LCD Display Interface
-- Multiple information pages with automatic scrolling
+- Multiple information pages with automatic scrolling *(available only on ESP32 boards)*
 - Welcome/logo page with version information
 - LoRa status page showing current configuration and statistics
 - WiFi connection status with signal strength indicator
@@ -130,7 +136,8 @@ For proper system monitoring functionality, you need to install the Espressif fr
 
 1. Install all required libraries through the Arduino Library Manager
 2. Open the project in the Arduino IDE
-3. Select the appropriate board (ESP32 or ESP32-S3)
+3. Select the appropriate board (ESP32 or ESP32-S3)  
+   *Note: If using ESP32-S3, be aware that the LCD display functionality is currently unavailable due to the absence of a second display for testing.*
 4. Compile and upload the code to your device
 
 ## Usage
@@ -169,7 +176,8 @@ For proper system monitoring functionality, you need to install the Espressif fr
 - Set display timeout for power saving
 - Enable/disable automatic page scrolling
 - Set auto-scroll interval
-- Buttons for manual page selection
+- Buttons for manual page selection  
+  *Note: These display controls are active only on ESP32 boards.*
 
 #### System Monitor Tab
 - Real-time CPU and memory usage statistics
@@ -181,7 +189,7 @@ For proper system monitoring functionality, you need to install the Espressif fr
 - Color-coded indicators for resource usage levels
 
 ### LCD Display Navigation
-The LCD display cycles through several information pages:
+The LCD display cycles through several information pages *(only on ESP32 boards)*:
 1. **Logo page** - Displays project name and version
 2. **LoRa Status** - Shows current LoRa parameters and statistics
 3. **WiFi Status** - Shows current WiFi mode and connection details
@@ -196,11 +204,11 @@ The display includes:
 ## Operation Details
 
 ### LED Indicators
-- ESP32-S3: RGB LED with color coding:
+- **ESP32-S3:** Uses an RGB NeoPixel LED with color coding:
   - Red: Packet transmission
   - Green: Packet received
   - Blue: Acknowledgment received
-- ESP32: Built-in LED blinks to indicate activity
+- **ESP32:** Built-in LED blinks to indicate activity
 
 ### Communication Protocol
 The system implements a simple packet exchange protocol:
@@ -225,10 +233,9 @@ The system implements a simple packet exchange protocol:
   - Red blinks: Transmitting packet
   - Green blinks: Received packet
   - Blue blinks: Acknowledgement received
-- If the display is not working:
-  - Check its connections (especially CS, DC, and RST pins)
-  - Verify display settings in the web interface
-  - Check that the display is enabled in settings
+- **Display Issues:**  
+  - For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the web interface.  
+  - For ESP32-S3 boards, note that the display functionality is currently disabled due to the unavailability of a second display for testing.
 
 ## Customization Options
 
@@ -245,7 +252,7 @@ The system implements a simple packet exchange protocol:
   - Default AP SSID: "ESP32_LoRa"
   - Default AP Password: "12345678"
 
-- **Display Settings:**
+- **Display Settings:** *(Effective only on ESP32 boards)*
   - Enabled by default
   - Brightness: 100%
   - Auto-scroll: Enabled
