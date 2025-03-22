@@ -38,6 +38,8 @@ bool DisplayManager::setupDisplay() {
     if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(10000))) {
         // Инициализируем дисплей
         _display->initR(INITR_144GREENTAB); // Используем initR вместо begin
+        _display->setSPISpeed(26000000); // 26 МГц
+
 
         // Настройка дисплея
         _display->setRotation(1);  // 0-3, поворот экрана
