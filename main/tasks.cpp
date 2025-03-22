@@ -101,7 +101,7 @@ void taskReceive(void *parameter) {
         } else {
           logger.println("Failed to acquire mutex for receive!");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
@@ -138,11 +138,11 @@ void taskWebInterface(void *parameter) {
         sett.tick();
         
         // Обновление данных для графика каждые 500 мс
-        static uint32_t plotTimer = 0;
-        if (millis() - plotTimer >= 500) {
-            plotTimer = millis();
-            plotManager.updateData();
-        }
+        // static uint32_t plotTimer = 0;
+        // if (millis() - plotTimer >= 500) {
+        //     plotTimer = millis();
+        //     plotManager.updateData();
+        // }
         
         // Периодическое обновление данных LoRa каждые 5000 мс
         static uint32_t loraTimer = 0;
@@ -163,7 +163,7 @@ void taskWebInterface(void *parameter) {
             logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
         }
         
-        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
+        vTaskDelay(pdMS_TO_TICKS(50)); // Небольшая задержка для экономии ресурсов
     }
 }
 
@@ -173,6 +173,6 @@ void taskDisplayUpdate(void *parameter) {
             displayManager->tick();
             displayManager->updateCurrentPage();
         }
-        vTaskDelay(pdMS_TO_TICKS(10)); // Обновление каждые 50 мс
+        vTaskDelay(pdMS_TO_TICKS(500)); // Обновление каждые 500 мс
     }
 }
