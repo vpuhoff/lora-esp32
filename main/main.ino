@@ -102,7 +102,10 @@ void setup() {
         while (true) {
             blinkLED(1, 200);
         }
+    } else {
+      loraManager->applySettings();
     }
+    
     logger.println("LoRa started successfully!");
     logger.println("LoRa started successfully!");
     blinkLED(3, 100);
@@ -110,7 +113,6 @@ void setup() {
     // Инициализация веб-сервера
     sett.begin();
     sett.onBuild(buildInterface);
-    
     
     
     // Создание задач

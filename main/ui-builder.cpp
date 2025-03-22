@@ -160,12 +160,12 @@ void UIBuilder::buildDashboardTab(sets::Builder& b) {
         }
     }
     
-    // График данных
-    {
-        sets::Group g(b, "График успешности доставки");
-        // Вызываем Plot с тремя параметрами: идентификатор, JSON-данные и объединённая подпись осей.
-        b.Plot(H(plot), plotManager.getPlotJson(), "Время, Успешность (%)");
-    }
+    // // График данных
+    // {
+    //     sets::Group g(b, "График успешности доставки");
+    //     // Вызываем Plot с тремя параметрами: идентификатор, JSON-данные и объединённая подпись осей.
+    //     b.Plot(H(plot), plotManager.getPlotJson(), "Время, Успешность (%)");
+    // }
 }
 
 // Функция отображения вкладки с логами
@@ -202,7 +202,7 @@ void UIBuilder::buildLoRaStatusTab(sets::Builder& b) {
             b.Label("Успешность доставки: " + String(loraManager->getSuccessRate()) + "%");
             b.Label("Сглаженная успешность: " + String(successRateSmoothed, 1) + "%");
         }
-        b.Label("Последний RSSI: " + String(loraManager->getLastRssi(), 1) + " dBm");
+        // b.Label("Последний RSSI: " + String(loraManager->getLastRssi(), 1) + " dBm");
     }
 }
 
@@ -357,67 +357,69 @@ void UIBuilder::buildSystemMonitorTab(sets::Builder& b) {
         b.Label("Min Free Heap: " + String(systemMonitor->getMinFreeHeap() / 1024) + " kB");
     }
     
-    {
-        sets::Group g(b, "Task Statistics");
+    // {
+    //     sets::Group g(b, "Task Statistics");
         
-        // Создаем HTML таблицу для отображения задач
-        String tableHtml = "<table style='width:100%;border-collapse:collapse;'>";
-        tableHtml += "<tr style='background:#333;color:white;'><th>Task</th><th>State</th><th>Priority</th><th>Stack</th><th>CPU%</th></tr>";
+    //     // Создаем HTML таблицу для отображения задач
+    //     String tableHtml = "<table style='width:100%;border-collapse:collapse;'>";
+    //     tableHtml += "<tr style='background:#333;color:white;'><th>Task</th><th>State</th><th>Priority</th><th>Stack</th><th>CPU%</th></tr>";
         
-        // Получаем информацию о задачах
-        uint16_t taskCount = 0;
-        SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
+    //     // Получаем информацию о задачах
+    //     uint16_t taskCount = 0;
+    //     SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
         
-        if (tasks != nullptr && taskCount > 0) {
-            for (uint16_t i = 0; i < taskCount; i++) {
-                // Определяем цвет строки в зависимости от загрузки CPU
-                String rowStyle;
-                if (tasks[i].cpuUsage > 50) {
-                    rowStyle = "background:#ffcccc;";  // Light red for high load
-                } else if (tasks[i].cpuUsage > 20) {
-                    rowStyle = "background:#ffffcc;";  // Light yellow for medium load
-                } else {
-                    rowStyle = "background:#ccffcc;";  // Light green for low load
-                }
+    //     if (tasks != nullptr && taskCount > 0) {
+    //         for (uint16_t i = 0; i < taskCount; i++) {
+    //             // Определяем цвет строки в зависимости от загрузки CPU
+    //             String rowStyle;
+    //             if (tasks[i].cpuUsage > 50) {
+    //                 rowStyle = "background:#ffcccc;";  // Light red for high load
+    //             } else if (tasks[i].cpuUsage > 20) {
+    //                 rowStyle = "background:#ffffcc;";  // Light yellow for medium load
+    //             } else {
+    //                 rowStyle = "background:#ccffcc;";  // Light green for low load
+    //             }
                 
-                // Формируем строку таблицы
-                tableHtml += "<tr style='" + rowStyle + "'>";
-                tableHtml += "<td>" + String(tasks[i].name) + "</td>";
+    //             // Формируем строку таблицы
+    //             tableHtml += "<tr style='" + rowStyle + "'>";
+    //             tableHtml += "<td>" + String(tasks[i].name) + "</td>";
                 
-                // Определяем текстовое состояние
-                String state;
-                switch (tasks[i].state) {
-                    case eRunning:   state = "Running"; break;
-                    case eReady:     state = "Ready"; break;
-                    case eBlocked:   state = "Blocked"; break;
-                    case eSuspended: state = "Suspended"; break;
-                    case eDeleted:   state = "Deleted"; break;
-                    default:         state = "Unknown"; break;
-                }
+    //             // Определяем текстовое состояние
+    //             String state;
+    //             switch (tasks[i].state) {
+    //                 case eRunning:   state = "Running"; break;
+    //                 case eReady:     state = "Ready"; break;
+    //                 case eBlocked:   state = "Blocked"; break;
+    //                 case eSuspended: state = "Suspended"; break;
+    //                 case eDeleted:   state = "Deleted"; break;
+    //                 default:         state = "Unknown"; break;
+    //             }
                 
-                tableHtml += "<td>" + state + "</td>";
-                tableHtml += "<td>" + String(tasks[i].priority) + "</td>";
-                tableHtml += "<td>" + String(tasks[i].stackHighWater) + "</td>";
-                tableHtml += "<td>" + String(tasks[i].cpuUsage) + "%</td>";
-                tableHtml += "</tr>";
-            }
+    //             tableHtml += "<td>" + state + "</td>";
+    //             tableHtml += "<td>" + String(tasks[i].priority) + "</td>";
+    //             tableHtml += "<td>" + String(tasks[i].stackHighWater) + "</td>";
+    //             tableHtml += "<td>" + String(tasks[i].cpuUsage) + "%</td>";
+    //             tableHtml += "</tr>";
+    //         }
             
-            // Освобождаем память
-            vPortFree(tasks);
-        } else {
-            tableHtml += "<tr><td colspan='5'>No task data available</td></tr>";
-        }
+    //         // Освобождаем память
+    //         vPortFree(tasks);
+    //     } else {
+    //         tableHtml += "<tr><td colspan='5'>No task data available</td></tr>";
+    //     }
         
-        tableHtml += "</table>";
+    //     tableHtml += "</table>";
         
-        // Отображаем таблицу
-        b.HTML(H("tasksTable"), tableHtml);
+    //     // Отображаем таблицу
+    //     b.HTML(H("tasksTable"), tableHtml);
         
-        // Кнопка обновления
-        if (b.Button(H("refreshStats"), "Refresh Statistics")) {
-            systemMonitor->update();
-            b.reload();
-        }
+        
+    // }
+
+    // Кнопка обновления
+    if (b.Button(H("refreshStats"), "Refresh Statistics")) {
+        systemMonitor->update();
+        b.reload();
     }
 }
 

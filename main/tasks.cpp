@@ -37,11 +37,11 @@ void taskSendHello(void *parameter) {
             LoRa.print("HLO:");
             LoRa.print(currentPacketId); // Отправляем ID пакета
             LoRa.endPacket();
-            xSemaphoreGive(spi_lock_mutex);
-
             uint32_t duration = millis() - startTime;
             Serial.printf("Hello packet %d sent, transmission time: %u ms\n", 
                          currentPacketId, duration);
+
+            xSemaphoreGive(spi_lock_mutex);
             
             // Отмечаем, что пакет отправлен, но пока не подтвержден
             updateStats(false);
@@ -163,7 +163,7 @@ void taskWebInterface(void *parameter) {
             logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
         }
         
-        vTaskDelay(pdMS_TO_TICKS(50)); // Небольшая задержка для экономии ресурсов
+        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
     }
 }
 

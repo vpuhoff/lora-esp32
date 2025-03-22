@@ -18,19 +18,19 @@ void LoRaManager::applySettings() {
     _maxAttempts = _db->get(DB_NAMESPACE::lora_max_attempts).toInt();
     _txPower = _db->get(DB_NAMESPACE::lora_tx_power).toInt();
     
-    logger.println("Применение настроек LoRa...");
+    Serial.println("Применение настроек LoRa...");
     
     if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(5000))) {
-        logger.println(String("Spreading:") + _spreading);
-        logger.println(String("Bandwidth:") + _bandwidth);
-        logger.println(String("CodingRate:") + _codingRate);
-        logger.println(String("TxPower:") + _txPower);
+        Serial.println(String("Spreading:") + _spreading);
+        Serial.println(String("Bandwidth:") + _bandwidth);
+        Serial.println(String("CodingRate:") + _codingRate);
+        Serial.println(String("TxPower:") + _txPower);
         LoRa.setSpreadingFactor(_spreading);
         LoRa.setSignalBandwidth(_bandwidth * 1000);
         LoRa.setCodingRate4(_codingRate);
         LoRa.setTxPower(_txPower);
         xSemaphoreGive(spi_lock_mutex);
-        logger.println("Настройки LoRa применены");
+        Serial.println("Настройки LoRa применены");
     } else {
         logger.println(error_() + "Не удалось захватить мьютекс");
     }
