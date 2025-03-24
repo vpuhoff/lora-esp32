@@ -2,6 +2,8 @@
 #include "statistics.h"
 #include "plot-manager.h"
 #include "system-monitor.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <vector>  // Для использования std::vector
 
 namespace DisplayUI {
@@ -281,35 +283,42 @@ void drawSystemInfoPage(Adafruit_ST7735* display) {
         else if (cpuUsage > 50) cpuBarColor = COLOR_WARNING;
         
         drawProgressBar(display, 5, 70, SCREEN_WIDTH - 10, 10, cpuUsage, cpuBarColor);
+
+        // UBaseType_t unusedStackWords = uxTaskGetStackHighWaterMark(NULL);
+        // size_t unusedStackBytes = unusedStackWords * sizeof(StackType_t); // Обычно 4 байта
         
-        display->setCursor(5, 85);
-        display->print("Tasks:");
+        // display->setCursor(5, 95);
+        // display->print("Free stack:");
+        // display->print(String(unusedStackBytes) + " bytes");
+
+        // display->setCursor(5, 85);
+        // display->print("Tasks:");
         
-        uint16_t taskCount = 0;
-        SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
+        // uint16_t taskCount = 0;
+        // SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
         
-        if (tasks != nullptr && taskCount > 0) {
-            int y = 95;
-            for (uint16_t i = 0; i < taskCount && i < 3; i++) {
-                if (taskCount > 1 && (strcmp(tasks[i].name, "IDLE") == 0 ||
-                    strncmp(tasks[i].name, "tiT", 3) == 0)) {
-                    continue;
-                }
-                display->setCursor(5, y);
-                display->print(tasks[i].name);
+        // if (tasks != nullptr && taskCount > 0) {
+        //     int y = 95;
+        //     for (uint16_t i = 0; i < taskCount && i < 3; i++) {
+        //         if (taskCount > 1 && (strcmp(tasks[i].name, "IDLE") == 0 ||
+        //             strncmp(tasks[i].name, "tiT", 3) == 0)) {
+        //             continue;
+        //         }
+        //         display->setCursor(5, y);
+        //         display->print(tasks[i].name);
                 
-                display->setCursor(80, y);
-                display->print(tasks[i].cpuUsage);
-                display->print("%");
+        //         display->setCursor(80, y);
+        //         display->print(tasks[i].cpuUsage);
+        //         display->print("%");
                 
-                y += 10;
-                if (y > 125) break;
-            }
-            vPortFree(tasks);
-        } else {
-            display->setCursor(5, 95);
-            display->print("Task data unavailable");
-        }
+        //         y += 10;
+        //         if (y > 125) break;
+        //     }
+        //     vPortFree(tasks);
+        // } else {
+        //     display->setCursor(5, 95);
+        //     display->print("Task data unavailable");
+        // }
     } else {
         display->setCursor(5, 60);
         display->print("CPU monitoring not available");

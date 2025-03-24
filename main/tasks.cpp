@@ -13,14 +13,14 @@ extern SettingsESPWS sett;
 
 void createTasks() {
     // LoRa-related tasks on Core 1
-    xTaskCreatePinnedToCore(taskSendHello, "SendHello", 3072, NULL, 2, NULL, 1);
-    xTaskCreatePinnedToCore(taskReceive, "Receive", 3072, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(taskSendHello, "SendHello", 4096, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(taskReceive, "Receive", 4096, NULL, 3, NULL, 1);
     
     // Lower priority for monitoring tasks
-    xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 4096, NULL, 1, NULL, 1);
     
     // UI and display tasks on Core 0 with appropriate priorities
-    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 8192, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 16384, NULL, 2, NULL, 0);
     #if DISPLAY_ENABLED
     // Задача обновления дисплея только для ESP32
     xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
@@ -117,8 +117,8 @@ void taskMonitorStack(void *parameter) {
         systemMonitor->update();
         
         // Логируем базовую информацию о стеке
-        UBaseType_t freeStack = uxTaskGetStackHighWaterMark(NULL);
-        Serial.printf("Free stack: %d bytes\n", freeStack);
+        // UBaseType_t freeStack = uxTaskGetStackHighWaterMark(NULL);
+        // Serial.printf("Free stack: %d bytes\n", freeStack);
         
         // Периодически логируем полную статистику (раз в минуту)
         static uint8_t fullLogCounter = 0;

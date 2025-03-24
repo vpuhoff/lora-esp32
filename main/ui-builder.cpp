@@ -68,7 +68,7 @@ void UIBuilder::buildDisplayTab(sets::Builder& b) {
     static int displayTimeout = 60;
     static bool displayAutoScroll = true;
     static int displayScrollInterval = 5;
-    
+
     if (!displayInit) {
         displayEnabled = _db->get(DB_NAMESPACE::display_enabled).toBool();
         displayBrightness = _db->get(DB_NAMESPACE::display_brightness).toInt();
@@ -77,59 +77,59 @@ void UIBuilder::buildDisplayTab(sets::Builder& b) {
         displayScrollInterval = _db->get(DB_NAMESPACE::display_scroll_interval).toInt() / 1000;
         displayInit = true;
     }
-    
+
     {
         sets::Group g(b, "Настройки дисплея");
-        
+
         b.Switch(H("display_enabled"), "Включить дисплей", &displayEnabled);
         b.Slider(H("display_brightness"), "Яркость дисплея", 0, 100, 5, "%");
         b.Slider(H("display_timeout"), "Тайм-аут подсветки (сек)", 0, 300, 10, "сек");
         b.Switch(H("display_auto_scroll"), "Автоматическое переключение страниц", &displayAutoScroll);
-        
+
         if (displayAutoScroll) {
             b.Slider(H("display_scroll_interval"), "Интервал переключения (сек)", 1, 30, 1, "сек");
         }
-        
+
         if (b.Button(H("apply_display"), "Применить настройки дисплея")) {
             _db->update(DB_NAMESPACE::display_enabled, displayEnabled);
             _db->update(DB_NAMESPACE::display_brightness, displayBrightness);
             _db->update(DB_NAMESPACE::display_timeout, displayTimeout);
             _db->update(DB_NAMESPACE::display_auto_scroll, displayAutoScroll);
             _db->update(DB_NAMESPACE::display_scroll_interval, displayScrollInterval * 1000);
-            
+
             if (displayManager) {
                 displayManager->applySettings();
             }
         }
     }
-    
+
     {
         sets::Group g(b, "Управление дисплеем");
-        
+
         if (b.Button(H("display_next"), "Следующая страница")) {
             if (displayManager) {
                 displayManager->nextPage();
             }
         }
-        
+
         if (b.Button(H("display_show_logo"), "Показать логотип")) {
             if (displayManager) {
                 displayManager->showLogo();
             }
         }
-        
+
         if (b.Button(H("display_show_lora"), "Показать статус LoRa")) {
             if (displayManager) {
                 displayManager->showLoRaStatus();
             }
         }
-        
+
         if (b.Button(H("display_show_wifi"), "Показать статус WiFi")) {
             if (displayManager) {
                 displayManager->showWiFiStatus();
             }
         }
-        
+
         if (b.Button(H("display_show_system"), "Показать системную информацию")) {
             if (displayManager) {
                 displayManager->showSystemInfo();
@@ -147,7 +147,7 @@ void UIBuilder::buildDashboardTab(sets::Builder& b) {
         b.Label("Время работы: " + String(millis() / 1000) + " сек");
         b.Label("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
     }
-    
+
     // Статистика LoRa
     {
         sets::Group g(b, "Общая статистика LoRa");
@@ -159,7 +159,7 @@ void UIBuilder::buildDashboardTab(sets::Builder& b) {
             b.Label("Сглаженная успешность: " + String(successRateSmoothed, 1) + "%");
         }
     }
-    
+
     // // График данных
     // {
     //     sets::Group g(b, "График успешности доставки");
@@ -226,7 +226,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
     }
     {
         sets::Group g(b, "Настройки WiFi");
-        
+
         // Читаем текущее значение режима WiFi один раз
         if (currentWifiModePersistent == -1) {
             currentWifiModePersistent = _db->get(DB_NAMESPACE::wifi_mode).toInt();
@@ -235,7 +235,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         // Виджет Select, который сохраняет выбранное значение в currentWifiModePersistent
         b.Select("Режим работы", "Только AP;Только STA;AP + STA", &currentWifiModePersistent);
         logger.println("Текущий режим WiFi (persistent): " + String(currentWifiModePersistent));
-        
+
         // Группа настроек для точки доступа (AP)
         if (currentWifiModePersistent == MY_WIFI_MODE_AP || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
             logger.println("Отображаем настройки точки доступа");
@@ -246,7 +246,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         } else {
             logger.println("Настройки точки доступа не отображаются");
         }
-        
+
         // Группа настроек для подключения (STA)
         if (currentWifiModePersistent == MY_WIFI_MODE_STA || currentWifiModePersistent == MY_WIFI_MODE_AP_STA) {
             logger.println("Отображаем настройки подключения к WiFi");
@@ -257,7 +257,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         } else {
             logger.println("Настройки подключения не отображаются");
         }
-        
+
         // Кнопка применения настроек
         if (b.Button(DB_NAMESPACE::apply_wifi, "Применить настройки WiFi")) {
             logger.println("Применяем настройки WiFi, новый режим: " + String(currentWifiModePersistent));
@@ -269,7 +269,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
             _needRestart = true; // Отметка о необходимости перезагрузки
         }
     }
-    
+
     // Настройки LoRa
     // Статические переменные для хранения настроек LoRa.
     static bool loraInit = false;
@@ -288,7 +288,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
     }
     {
         sets::Group g(b, "Настройки LoRa");
-        
+
         b.Select(DB_NAMESPACE::lora_spreading_selected, "Spreading Factor", sfOptions);
         b.Select(DB_NAMESPACE::lora_bandwidth_selected, "Bandwidth (kHz)", bwOptions);
         b.Select(DB_NAMESPACE::lora_coding_rate_selected, "Coding Rate (4/x)", crOptions);
@@ -296,7 +296,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
         b.Slider(DB_NAMESPACE::lora_tx_power, "Мощность передачи (dBm)", 2.0f, 20.0f, 1.0f, "");
 
         // обработка действий
-        switch (b.build.id) { 
+        switch (b.build.id) {
             case DB_NAMESPACE::lora_spreading_selected:
                 logger.println(String("current_lora_spreading:") + String(sfOptions[b.build.value]));
                 currentLoraSpreading = String(sfOptions[b.build.value]).toInt();
@@ -318,7 +318,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
                 currentLoraTxPower = b.build.value.toInt();
                 break;
         }
-    
+
         if (b.Button(H("apply_lora"), "Применить настройки LoRa")) {
             _db->update(DB_NAMESPACE::lora_spreading, currentLoraSpreading);
             _db->update(DB_NAMESPACE::lora_bandwidth, currentLoraBandwidth.toFloat());
@@ -329,7 +329,7 @@ void UIBuilder::buildSettingsTab(sets::Builder& b) {
             _needRestart = true; // Отметка о необходимости перезагрузки
         }
     }
-    
+
     // Управление устройством
     {
         //sets::Group g(b, "Управление устройством");
@@ -347,74 +347,47 @@ void UIBuilder::buildSystemMonitorTab(sets::Builder& b) {
         b.Label("System monitoring not available");
         return;
     }
-    
+
     systemMonitor->update(); // Обновляем данные мониторинга
-    
+
     {
         sets::Group g(b, "CPU & Memory");
         b.Label("CPU Usage: " + String(systemMonitor->getTotalCpuUsage()) + "%");
         b.Label("Free Heap: " + String(systemMonitor->getFreeHeap() / 1024) + " kB");
         b.Label("Min Free Heap: " + String(systemMonitor->getMinFreeHeap() / 1024) + " kB");
+        // UBaseType_t unusedStackWords = uxTaskGetStackHighWaterMark(NULL);
+        // size_t unusedStackBytes = unusedStackWords * sizeof(StackType_t); // Обычно 4 байта
+        // b.Label("Min Free Stack: " + String(unusedStackBytes / 1024) + " kB");
     }
-    
-    // {
-    //     sets::Group g(b, "Task Statistics");
-        
-    //     // Создаем HTML таблицу для отображения задач
-    //     String tableHtml = "<table style='width:100%;border-collapse:collapse;'>";
-    //     tableHtml += "<tr style='background:#333;color:white;'><th>Task</th><th>State</th><th>Priority</th><th>Stack</th><th>CPU%</th></tr>";
-        
-    //     // Получаем информацию о задачах
-    //     uint16_t taskCount = 0;
-    //     SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
-        
-    //     if (tasks != nullptr && taskCount > 0) {
-    //         for (uint16_t i = 0; i < taskCount; i++) {
-    //             // Определяем цвет строки в зависимости от загрузки CPU
-    //             String rowStyle;
-    //             if (tasks[i].cpuUsage > 50) {
-    //                 rowStyle = "background:#ffcccc;";  // Light red for high load
-    //             } else if (tasks[i].cpuUsage > 20) {
-    //                 rowStyle = "background:#ffffcc;";  // Light yellow for medium load
-    //             } else {
-    //                 rowStyle = "background:#ccffcc;";  // Light green for low load
-    //             }
-                
-    //             // Формируем строку таблицы
-    //             tableHtml += "<tr style='" + rowStyle + "'>";
-    //             tableHtml += "<td>" + String(tasks[i].name) + "</td>";
-                
-    //             // Определяем текстовое состояние
-    //             String state;
-    //             switch (tasks[i].state) {
-    //                 case eRunning:   state = "Running"; break;
-    //                 case eReady:     state = "Ready"; break;
-    //                 case eBlocked:   state = "Blocked"; break;
-    //                 case eSuspended: state = "Suspended"; break;
-    //                 case eDeleted:   state = "Deleted"; break;
-    //                 default:         state = "Unknown"; break;
-    //             }
-                
-    //             tableHtml += "<td>" + state + "</td>";
-    //             tableHtml += "<td>" + String(tasks[i].priority) + "</td>";
-    //             tableHtml += "<td>" + String(tasks[i].stackHighWater) + "</td>";
-    //             tableHtml += "<td>" + String(tasks[i].cpuUsage) + "%</td>";
-    //             tableHtml += "</tr>";
-    //         }
-            
-    //         // Освобождаем память
-    //         vPortFree(tasks);
-    //     } else {
-    //         tableHtml += "<tr><td colspan='5'>No task data available</td></tr>";
-    //     }
-        
-    //     tableHtml += "</table>";
-        
-    //     // Отображаем таблицу
-    //     b.HTML(H("tasksTable"), tableHtml);
-        
-        
-    // }
+
+    Serial.println("Отображение списка задач...");
+    {
+        sets::Group g(b, "Task Statistics");
+
+        // Получаем информацию о задачах
+        uint16_t taskCount = 0;
+        SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount); // Исправлено: SystemMonitor::TaskInfo* -> TaskInfo*
+
+        if (tasks != nullptr && taskCount > 0) {
+            for (uint16_t i = 0; i < taskCount; i++) {
+                // Определяем текстовое состояние
+                String state;
+                switch (tasks[i].state) {
+                    case eRunning:    state = "Running"; break;
+                    case eReady:      state = "Ready"; break;
+                    case eBlocked:    state = "Blocked"; break;
+                    case eSuspended:  state = "Suspended"; break;
+                    case eDeleted:    state = "Deleted"; break;
+                    default:          state = "Unknown"; break;
+                }
+
+                b.Label(String(tasks[i].name) + ": "+ String(tasks[i].cpuUsage) + "[" + state + "] " + String(tasks[i].stackHighWater) + " bytes free");
+            }
+            // Внимание: Память для 'tasks' выделяется статически в getTasksInfo,
+            // поэтому освобождать ее здесь не нужно.
+            // vPortFree(tasks);
+        } 
+    }
 
     // Кнопка обновления
     if (b.Button(H("refreshStats"), "Refresh Statistics")) {
