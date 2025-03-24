@@ -1,0 +1,88 @@
+{
+    "name": "lora-esp32",
+    "version": "1.0.0",
+    "description": "Configurable LoRa communication system using ESP32 or ESP32-S3 microcontrollers with web management interface",
+    "keywords": [
+        "esp32",
+        "esp32-s3",
+        "lora",
+        "iot",
+        "arduino",
+        "sx1278",
+        "wireless"
+    ],
+    "homepage": "https://github.com/vpuhoff/lora-esp32#readme",
+    "bugs": {
+        "url": "https://github.com/vpuhoff/lora-esp32/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vpuhoff/lora-esp32.git"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "vpuhoff"
+    },
+    "dependencies": {
+        "arduino-lora": "^1.0.0",
+        "adafruit-neopixel": "^1.0.0",
+        "arduino-esp32-wifi": "^1.0.0",
+        "littlefs": "^1.0.0",
+        "gyver-db": "^1.0.0",
+        "gyver-db-file": "^1.0.0",
+        "settings-esp-ws": "^1.0.0",
+        "gtimer": "^1.0.0",
+        "adafruit-gfx": "^1.0.0",
+        "adafruit-st7735": "^1.0.0"
+    },
+    "engines": {
+        "arduino": ">=1.8.0",
+        "esp32": ">=1.0.6"
+    },
+    "boards": [
+        "esp32:esp32:esp32",
+        "esp32:esp32:esp32s3"
+    ],
+    "platformio": {
+        "env_default": "esp32dev",
+        "env": {
+            "esp32dev": {
+                "platform": "espressif32",
+                "board": "esp32dev",
+                "framework": "arduino",
+                "lib_deps": [
+                    "sandeepmistry/LoRa",
+                    "adafruit/Adafruit NeoPixel",
+                    "adafruit/Adafruit GFX Library",
+                    "adafruit/Adafruit ST7735 and ST7789 Library",
+                    "lorol/LittleFS",
+                    "gyverlibs/GyverDB",
+                    "gyverlibs/GyverSettings",
+                    "gyverlibs/GTimer"
+                ],
+                "build_flags": [
+                    "-D CONFIG_IDF_TARGET_ESP32"
+                ]
+            },
+            "esp32s3": {
+                "platform": "espressif32",
+                "board": "esp32-s3-devkitc-1",
+                "framework": "arduino",
+                "lib_deps": [
+                    "sandeepmistry/LoRa",
+                    "adafruit/Adafruit NeoPixel",
+                    "lorol/LittleFS",
+                    "gyverlibs/GyverDB",
+                    "gyverlibs/GyverSettings",
+                    "gyverlibs/GTimer"
+                ],
+                "build_flags": [
+                    "-D CONFIG_IDF_TARGET_ESP32S3"
+                ]
+            }
+        }
+    },
+    "arduino": {
+        "entrypoint": "main/main.ino"
+    }
+}
