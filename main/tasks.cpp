@@ -101,7 +101,7 @@ void taskReceive(void *parameter) {
         } else {
           logger.println("Failed to acquire mutex for receive!");
         }
-        vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
