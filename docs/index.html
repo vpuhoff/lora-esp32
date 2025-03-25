@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoRa ESP32/ESP32-S3 Project with Web Interface</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Dark mode CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-dark-5/1.1.3/css/bootstrap-night.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0d6efd, #084298);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #0d6efd;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .hardware-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .note {
+            border-left: 4px solid #f39c12;
+        }
+        .social-icon {
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+        .social-icon:hover {
+            color: #0d6efd !important;
+        }
+        .table-sm {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body data-bs-theme="dark">
+    <!-- Header -->
+    <header class="bg-gradient-primary text-white py-5 mb-5">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold">LoRa ESP32/ESP32-S3 Project</h1>
+                    <p class="lead">A configurable LoRa communication system with comprehensive web interface</p>
+                    <div class="mt-4">
+                        <a href="https://github.com/vpuhoff/lora-esp32-project" class="btn btn-danger me-2">
+                            <i class="fab fa-github"></i> View on GitHub
+                        </a>
+                        <a href="#quick-start" class="btn btn-light">
+                            <i class="fas fa-play"></i> Quick Start
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Project Description -->
+        <section class="mb-5 text-center">
+            <h2 class="mb-4">About the Project</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <p class="lead">
+                        This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers.
+                        It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging.
+                        The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
+                    </p>
+                    <div class="alert alert-warning">
+                        <strong>Important Note:</strong> Display functionality (ST7735S LCD) is enabled only on ESP32 boards.
+                        For ESP32-S3 boards the display is currently disabled <strong>only because a second display is not available for testing yet</strong>.
+                        This is a temporary limitation and may be revisited in future revisions.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Core Features</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm bg-dark">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <h5 class="card-title">Web Interface</h5>
+                            <p class="card-text">Comprehensive web-based control panel with real-time statistics, configuration options, and system logs.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <h5 class="card-title">LoRa Communication</h5>
+                            <p class="card-text">Configurable LoRa parameters including Spreading Factor (SF7-SF12), Bandwidth (7.8kHz-500kHz), and Coding Rate.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h5 class="card-title">Real-time Statistics</h5>
+                            <p class="card-text">Monitor packet delivery success rates, system performance, and resource usage with detailed analytics.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <h5 class="card-title">Display Interface</h5>
+                            <p class="card-text">ST7735S LCD display shows system status, connection details, and real-time statistics (ESP32 boards only).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-battery-half"></i>
+                            </div>
+                            <h5 class="card-title">Battery Support</h5>
+                            <p class="card-text">Support for battery power with TP4056 charging module integration for portable operation.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <h5 class="card-title">System Monitoring</h5>
+                            <p class="card-text">Advanced CPU and memory usage tracking with per-task statistics for system optimization.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Guide -->
+        <section id="quick-start" class="mb-5">
+            <div class="card shadow-sm bg-dark">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Quick Start Guide</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-2 text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <h3 class="mb-0">1</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h4>Hardware Setup</h4>
+                            <p>Connect the LoRa module to your ESP32 or ESP32-S3 according to the wiring diagram in the documentation. For ESP32 boards, also connect the ST7735S display if available.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-2 text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <h3 class="mb-0">2</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h4>Software Installation</h4>
+                            <p>Install all required libraries through the Arduino Library Manager. Open the project in the Arduino IDE, select the appropriate board (ESP32 or ESP32-S3), and upload the code to your device.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-2 text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <h3 class="mb-0">3</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h4>Initial Configuration</h4>
+                            <p>The device creates a WiFi access point named "ESP32_LoRa" with password "12345678" by default. Connect to this network with your computer or smartphone, then open a web browser and navigate to http://192.168.4.1</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-2 text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <h3 class="mb-0">4</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h4>Configure Parameters</h4>
+                            <p>Use the web interface to configure WiFi settings, LoRa parameters, display options, and other system settings according to your requirements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Components -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Hardware Components</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Supported Microcontrollers</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-microchip text-primary me-3"></i>
+                                    ESP32 (DOIT ESP32 DEVKIT V1 recommended)
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-microchip text-primary me-3"></i>
+                                    ESP32-S3 (WeAct ESP32-S3-A DevKitC-1)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Components</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-broadcast-tower text-primary me-3"></i>
+                                    LoRa Module: SX1278
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-desktop text-primary me-3"></i>
+                                    Display: ST7735S 1.44" 128x128 LCD (ESP32 only)
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-battery-full text-primary me-3"></i>
+                                    Charging Module: TP4056 (optional)
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-battery-half text-primary me-3"></i>
+                                    Battery: Nokia BL-4C or similar (optional)
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-cube text-primary me-3"></i>
+                                    Case: 3D printed (available on <a href="https://www.thingiverse.com/thing:6973923" target="_blank">Thingiverse</a>)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wiring Diagrams -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Wiring Diagrams</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">ESP32-S3 to LoRa SX1278</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered table-dark">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>SX1278</th>
+                                            <th>ESP32-S3 (GPIO)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>3.3V</td><td>3.3V</td></tr>
+                                        <tr><td>GND</td><td>GND</td></tr>
+                                        <tr><td>NSS</td><td>GPIO10</td></tr>
+                                        <tr><td>DIO0</td><td>GPIO9</td></tr>
+                                        <tr><td>SCK</td><td>GPIO12 (default SPI)</td></tr>
+                                        <tr><td>MISO</td><td>GPIO13 (default SPI)</td></tr>
+                                        <tr><td>MOSI</td><td>GPIO11 (default SPI)</td></tr>
+                                        <tr><td>RST</td><td>GPIO14</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">ESP32 to LoRa SX1278</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>SX1278</th>
+                                            <th>ESP32 (GPIO)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>3.3V</td><td>3.3V</td></tr>
+                                        <tr><td>GND</td><td>GND</td></tr>
+                                        <tr><td>NSS</td><td>GPIO15</td></tr>
+                                        <tr><td>DIO0</td><td>GPIO4</td></tr>
+                                        <tr><td>SCK</td><td>GPIO18 (default SPI)</td></tr>
+                                        <tr><td>MISO</td><td>GPIO19 (default SPI)</td></tr>
+                                        <tr><td>MOSI</td><td>GPIO23 (default SPI)</td></tr>
+                                        <tr><td>RST</td><td>GPIO14</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mt-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">ESP32 to ST7735S LCD Display</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ST7735S</th>
+                                            <th>ESP32 (GPIO)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>VCC</td><td>3.3V</td></tr>
+                                        <tr><td>GND</td><td>GND</td></tr>
+                                        <tr><td>SCL</td><td>GPIO18 (shared SPI SCK)</td></tr>
+                                        <tr><td>SDA</td><td>GPIO23 (shared SPI MOSI)</td></tr>
+                                        <tr><td>RES</td><td>GPIO17 (TFT_RST)</td></tr>
+                                        <tr><td>DC</td><td>GPIO16 (TFT_DC)</td></tr>
+                                        <tr><td>CS</td><td>GPIO5 (TFT_CS)</td></tr>
+                                        <tr><td>BLK</td><td>GPIO22 (TFT_LED) or 3.3V</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="small text-muted mt-2">
+                                    <i class="fas fa-info-circle"></i> No display wiring for ESP32-S3 as the LCD display is disabled on that platform.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Required Libraries -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Required Libraries</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/sandeepmistry/arduino-LoRa" target="_blank">LoRa</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/adafruit/Adafruit_NeoPixel" target="_blank">Adafruit_NeoPixel</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/espressif/arduino-esp32/tree/master/libraries/WiFi" target="_blank">WiFi</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/lorol/LITTLEFS" target="_blank">LittleFS</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/GyverLibs/GyverDB" target="_blank">GyverDB & GyverDBFile</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/GyverLibs/Settings" target="_blank">SettingsESPWS</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/GyverLibs/GTimer" target="_blank">GTimer</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/adafruit/Adafruit-GFX-Library" target="_blank">Adafruit_GFX</a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-book text-primary me-3"></i>
+                                    <a href="https://github.com/adafruit/Adafruit-ST7735-Library" target="_blank">Adafruit_ST7735</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Web Interface -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Web Interface</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Dashboard Tab</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">System status (WiFi connection, uptime, free memory)</li>
+                                <li class="list-group-item">LoRa statistics (packets sent, delivered, success rate)</li>
+                                <li class="list-group-item">Real-time graph of delivery success rate over time</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">LoRa Status Tab</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Current LoRa configuration parameters</li>
+                                <li class="list-group-item">Transmission statistics (total packets, success rate)</li>
+                                <li class="list-group-item">RSSI information</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Settings Tab</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">WiFi configuration (mode selection, credentials)</li>
+                                <li class="list-group-item">LoRa parameters configuration</li>
+                                <li class="list-group-item">Device restart option</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Display Tab</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Toggle display on/off</li>
+                                <li class="list-group-item">Adjust display brightness</li>
+                                <li class="list-group-item">Set display timeout for power saving</li>
+                                <li class="list-group-item">Enable/disable automatic page scrolling</li>
+                                <li class="list-group-item">Set auto-scroll interval</li>
+                            </ul>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="fas fa-info-circle"></i> These display controls are active only on ESP32 boards.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="mb-5">
+            <h2 class="text-center mb-4">Troubleshooting</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            If the device fails to boot or LoRa initialization fails, the LED will blink indefinitely
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-terminal text-primary me-2"></i>
+                            Check serial output at 115200 baud for diagnostic information
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-list-alt text-primary me-2"></i>
+                            Web interface logs provide detailed system status and error information
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-wifi text-primary me-2"></i>
+                            If WiFi connection is unstable, check the configured credentials in Settings
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            LED/RGB indicators show device status:
+                            <ul class="mt-2">
+                                <li>Red blinks: Transmitting packet</li>
+                                <li>Green blinks: Received packet</li>
+                                <li>Blue blinks: Acknowledgement received</li>
+                            </ul>
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-desktop text-primary me-2"></i>
+                            <strong>Display Issues:</strong><br>
+                            For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the web interface.<br>
+                            For ESP32-S3 boards, note that the display functionality is currently disabled due to the unavailability of a second display for testing.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-4 mt-5">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-lg-12">
+                    <p>&copy; 2025 LoRa ESP32/ESP32-S3 Project</p>
+                    <p>Open source - feel free to modify and distribute with proper attribution.</p>
+                    <div class="mt-3">
+                        <a href="https://github.com/yourusername/lora-esp32-project" class="text-white me-3 social-icon">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="text-white me-3 social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.thingiverse.com/thing:6973923" class="text-white social-icon">
+                            <i class="fab fa-creative-commons-by"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
