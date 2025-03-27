@@ -27,3 +27,15 @@ bool setupLoRa() {
     
     return true;
 } 
+
+// Перезапуск LoRa-модуля
+void restartLoRaModule() {
+  Serial.println("Перезапуск LoRa-модуля...");
+  // Выполняем аппаратный сброс через пин RESET
+  digitalWrite(LORA_RST, LOW);
+  delay(100);  // Короткая задержка для сброса
+  digitalWrite(LORA_RST, HIGH);
+  delay(100);  // Задержка для стабилизации
+  // Переинициализируем модуль
+  setupLoRa();
+}

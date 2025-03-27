@@ -7,5 +7,6 @@
 
 // Инициализация LoRa модуля
 bool setupLoRa();
+void restartLoRaModule();
 
 #endif // LORA_MODULE_H 

@@ -14,6 +14,8 @@ void taskSendHello(void *parameter);
 // Задача приема сообщений
 void taskReceive(void *parameter);
 
+void taskLoraRestart(void * parameter);
+
 // Задача мониторинга стека
 void taskMonitorStack(void *parameter);
 

@@ -20,7 +20,7 @@ void LoRaManager::applySettings() {
     
     Serial.println("Применение настроек LoRa...");
     
-    if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(5000))) {
+    if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(10000))) {
         Serial.println(String("Spreading:") + _spreading);
         Serial.println(String("Bandwidth:") + _bandwidth);
         Serial.println(String("CodingRate:") + _codingRate);

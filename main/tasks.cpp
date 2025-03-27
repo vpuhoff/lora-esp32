@@ -7,15 +7,18 @@
 #include "display-manager.h"
 #include <WiFi.h>
 #include <SettingsESPWS.h>
+#include "lora_module.h"
 
 // Объявление внешних переменных, используемых в задаче веб-интерфейса
 extern SettingsESPWS sett;
+extern void restartLoRaModule();
 
 void createTasks() {
     // LoRa-related tasks on Core 1
     xTaskCreatePinnedToCore(taskSendHello, "SendHello", 4096, NULL, 2, NULL, 1);
     xTaskCreatePinnedToCore(taskReceive, "Receive", 4096, NULL, 3, NULL, 1);
-    
+    xTaskCreatePinnedToCore(taskLoraRestart, "LoraRestart", 4096, NULL, 1, NULL, 1);
+
     // Lower priority for monitoring tasks
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 4096, NULL, 1, NULL, 1);
     
@@ -49,6 +52,21 @@ void taskSendHello(void *parameter) {
         }
         vTaskDelay(pdMS_TO_TICKS(random(15000, 30000)));
     }
+}
+
+// Задача для периодического перезапуска LoRa-модуля
+void taskLoraRestart(void * parameter) {
+  // Интервал перезапуска: 5 минут
+  const TickType_t xDelay = pdMS_TO_TICKS(300000);
+  
+  while (true) {
+    // Задача ожидает указанный интервал
+    vTaskDelay(xDelay);
+    Serial.println("Restart LoRa module...");
+    // Перезапуск LoRa-модуля
+    restartLoRaModule();
+    loraManager->applySettings();
+  }
 }
 
 void taskReceive(void *parameter) {
