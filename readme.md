@@ -128,6 +128,7 @@ This project implements a configurable LoRa communication system using either ES
 - [GTimer](https://github.com/GyverLibs/GTimer) - For timing operations
 - [Adafruit_GFX](https://github.com/adafruit/Adafruit-GFX-Library) - Graphics library
 - [Adafruit_ST7735](https://github.com/adafruit/Adafruit-ST7735-Library) - ST7735 LCD driver
+- [arduinoWebSockets](https://github.com/Links2004/arduinoWebSockets) для версии SettingsGyverWS/SettingsESPWS *(ставится вручную)*
 
 ## Espressif Framework Requirements
 For proper system monitoring functionality, you need to install the Espressif framework:
