@@ -3,6 +3,8 @@
 ## Description
 This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
 
+* **Wiki:** [https://deepwiki.com/vpuhoff/lora-esp32](https://deepwiki.com/vpuhoff/lora-esp32/1-overview)
+
 ## Stats
 ![Alt](https://repobeats.axiom.co/api/embed/c7087f8d6372144d07c65d970e4d3a6bfc5a89fb.svg "Repobeats analytics image")
 
