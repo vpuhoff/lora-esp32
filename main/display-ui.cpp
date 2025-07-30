@@ -373,11 +373,14 @@ void drawCpuMonitorPage(Adafruit_ST7735* display) {
     display->setCursor(5, 15);
     display->print("CPU: ");
     display->print(systemMonitor->getTotalCpuUsage());
-    display->print("% Free: ");
+    display->print("%");
+
+    display->setCursor(5, 25);
+    display->print("Free RAM: ");
     display->print(systemMonitor->getFreeHeap() / 1024);
-    display->print("kB");
-    
-    display->drawLine(0, 25, 128, 25, COLOR_HEADER);
+    display->print(" kB");
+
+    display->drawLine(0, 35, 128, 35, COLOR_HEADER);
     
     uint16_t taskCount = 0;
     SystemMonitor::TaskInfo* tasks = systemMonitor->getTasksInfo(taskCount);
@@ -385,10 +388,10 @@ void drawCpuMonitorPage(Adafruit_ST7735* display) {
     if (tasks != nullptr && taskCount > 0) {
         uint8_t displayLimit = min(6, (int)taskCount);
         
-        display->setCursor(5, 30);
+        display->setCursor(5, 40);
         display->println("Task      CPU  Stack");
-        
-        int y = 40;
+
+        int y = 50;
         for (uint8_t i = 0; i < displayLimit; i++) {
             if (taskCount > 6 && (strcmp(tasks[i].name, "IDLE") == 0 || strncmp(tasks[i].name, "tiT", 3) == 0)) {
                 continue;
