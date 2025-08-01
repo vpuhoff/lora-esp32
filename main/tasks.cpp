@@ -7,6 +7,7 @@
 #include "display-manager.h"
 #include <WiFi.h>
 #include <SettingsESPWS.h>
+#include "esp_task_wdt.h"
 
 // Объявление внешних переменных, используемых в задаче веб-интерфейса
 extern SettingsESPWS sett;
@@ -28,6 +29,7 @@ void createTasks() {
 }
 
 void taskSendHello(void *parameter) {
+    esp_task_wdt_add(NULL);
     while (true) {
         if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(4000))) {
             int currentPacketId = packetId++;
@@ -47,11 +49,13 @@ void taskSendHello(void *parameter) {
             updateStats(false);
             blinkLED(3, 50, 255, 0, 0); // Красный
         }
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(random(15000, 30000)));
     }
 }
 
 void taskReceive(void *parameter) {
+    esp_task_wdt_add(NULL);
     for (;;) {
         if (xSemaphoreTake(spi_lock_mutex, pdMS_TO_TICKS(5000))) {
             int packetSize = LoRa.parsePacket();
@@ -101,12 +105,14 @@ void taskReceive(void *parameter) {
         } else {
           logger.println("Failed to acquire mutex for receive!");
         }
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
 // Заменяем существующую функцию taskMonitorStack
 void taskMonitorStack(void *parameter) {
+    esp_task_wdt_add(NULL);
     // Создаем экземпляр SystemMonitor, если он еще не создан
     if (systemMonitor == nullptr) {
         systemMonitor = new SystemMonitor();
@@ -128,12 +134,14 @@ void taskMonitorStack(void *parameter) {
             fullLogCounter = 0;
         }
         
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10000));  // Проверка каждые 10 секунд
     }
 }
 
 // Задача для обработки веб-интерфейса
 void taskWebInterface(void *parameter) {
+    esp_task_wdt_add(NULL);
     for (;;) {
         sett.tick();
         
@@ -163,16 +171,19 @@ void taskWebInterface(void *parameter) {
             logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
         }
         
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
     }
 }
 
 void taskDisplayUpdate(void *parameter) {
+    esp_task_wdt_add(NULL);
     for (;;) {
         if (displayManager && displayManager->isEnabled()) {
             displayManager->tick();
             displayManager->updateCurrentPage();
         }
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(500)); // Обновление каждые 500 мс
     }
 }
