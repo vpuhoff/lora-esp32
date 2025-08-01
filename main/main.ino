@@ -9,6 +9,7 @@
 #include <GyverDBFile.h>
 #include <SettingsESPWS.h>
 #include <GTimer.h>
+#include "esp_task_wdt.h"
 
 // Подключение всех модулей
 #include "config.h"
@@ -48,6 +49,9 @@ void buildInterface(sets::Builder& b) {
 void setup() {
     Serial.begin(115200);
     logger.println();
+
+    // Инициализация watchdog таймера для задач
+    esp_task_wdt_init(60, true);
 
     // Создание мьютекса для SPI
     spi_lock_mutex = xSemaphoreCreateMutex();
@@ -129,11 +133,18 @@ void setup() {
 }
 
 void loop() {
+    static bool wdt_added = false;
+    if (!wdt_added) {
+        esp_task_wdt_add(NULL);
+        wdt_added = true;
+    }
+
     static GTimer<millis> tmr(1000, true);
     if (tmr) {
         sett.updater()
             .update(H("logger"), logger);
             //.update(H(lbl2), random(100));
     }
+    esp_task_wdt_reset();
     vTaskDelay(500);
 }
