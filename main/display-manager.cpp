@@ -3,7 +3,6 @@
 #include "statistics.h"
 #include "lora-manager.h"
 #include "wifi-manager.h"
-#include "plot-manager.h"
 
 // Глобальный экземпляр менеджера дисплея
 extern DisplayManager* displayManager;
@@ -345,7 +344,7 @@ void DisplayManager::showSystemInfo() {
 void DisplayManager::showLogs() {
     if (_enabled && _display != nullptr) {
         // Вместо показа страницы логов отображаем сообщение
-        showInfo("Logs available in web interface", 2000);
+        showInfo("Logs available via serial", 2000);
         
         // НЕ устанавливаем текущую страницу как PAGE_LOGS
         // _currentPage = PAGE_LOGS;

@@ -1,7 +1,7 @@
 {
     "name": "lora-esp32",
     "version": "1.0.0",
-    "description": "Configurable LoRa communication system using ESP32 or ESP32-S3 microcontrollers with web management interface",
+    "description": "Configurable LoRa communication system using ESP32 or ESP32-S3 microcontrollers",
     "keywords": [
         "esp32",
         "esp32-s3",
@@ -30,7 +30,6 @@
         "littlefs": "^1.0.0",
         "gyver-db": "^1.0.0",
         "gyver-db-file": "^1.0.0",
-        "settings-esp-ws": "^1.0.0",
         "gtimer": "^1.0.0",
         "adafruit-gfx": "^1.0.0",
         "adafruit-st7735": "^1.0.0"
