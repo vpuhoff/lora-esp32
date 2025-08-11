@@ -1,7 +1,7 @@
-# LoRa ESP32/ESP32-S3 Project with Web Interface
+# LoRa ESP32/ESP32-S3 Project
 
 ## Description
-This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
+This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
 
 * **Wiki:** [https://deepwiki.com/vpuhoff/lora-esp32](https://deepwiki.com/vpuhoff/lora-esp32/1-overview)
 
@@ -70,8 +70,7 @@ This project implements a configurable LoRa communication system using either ES
 ### Core Functionality
 - Automatic dual-way LoRa packet transmission with acknowledgment system
 - Dynamic statistics tracking (total packets, delivery success rate, RSSI)
-- Multi-core task management (LoRa operations on Core 1, Web interface on Core 0)
-- Configurable system parameters via web interface
+- Multi-core task management (LoRa operations on Core 1, monitoring tasks on Core 0)
 - Visual feedback via LED/RGB indicators for system status
 - LCD display for real-time information and status monitoring *(only on ESP32 boards)*
 - CPU and memory usage monitoring with detailed task statistics
@@ -82,15 +81,6 @@ This project implements a configurable LoRa communication system using either ES
 - Selectable Coding Rate (4/5 to 4/8)
 - Transmission power control (2-20 dBm)
 - Maximum transmission attempts setting
-
-### Web Interface
-- Six main sections: Dashboard, LoRa Status, Logs, Settings, Display, and System Monitor
-- Real-time statistics with visual graph of packet delivery success
-- Comprehensive system logs with adjustable detail levels
-- WiFi configuration supporting three modes: AP, STA, or AP+STA
-- Visual indicators for system status and packet delivery success
-- Display configuration and control options *(Note: Display settings affect only ESP32 boards)*
-- System resource monitoring and task statistics
 
 ### LCD Display Interface
 - Multiple information pages with automatic scrolling *(available only on ESP32 boards)*
@@ -126,7 +116,6 @@ This project implements a configurable LoRa communication system using either ES
 - [LittleFS](https://github.com/lorol/LITTLEFS) - File system for ESP32
 - [GyverDB](https://github.com/GyverLibs/GyverDB) - Database storage
 - [GyverDBFile](https://github.com/GyverLibs/GyverDB) - File-based database
-- [SettingsESPWS](https://github.com/GyverLibs/Settings) - Web-based UI configuration
 - [GTimer](https://github.com/GyverLibs/GTimer) - For timing operations
 - [Adafruit_GFX](https://github.com/adafruit/Adafruit-GFX-Library) - Graphics library
 - [Adafruit_ST7735](https://github.com/adafruit/Adafruit-ST7735-Library) - ST7735 LCD driver
@@ -144,67 +133,6 @@ For proper system monitoring functionality, you need to install the Espressif fr
 3. Select the appropriate board (ESP32 or ESP32-S3)  
    *Note: If using ESP32-S3, be aware that the LCD display functionality is currently unavailable due to the absence of a second display for testing.*
 4. Compile and upload the code to your device
-
-## Usage
-
-### Initial Setup
-1. The device creates a WiFi access point named "ESP32_LoRa" with password "12345678" by default
-2. Connect to this network with your computer or smartphone
-3. Open a web browser and navigate to http://192.168.4.1
-4. Use the web interface to configure the device
-
-### Web Interface Navigation
-
-#### Dashboard Tab
-- Shows system status (WiFi connection, uptime, free memory)
-- Displays LoRa statistics (packets sent, delivered, success rate)
-- Real-time graph of delivery success rate over time
-
-#### LoRa Status Tab
-- Current LoRa configuration parameters
-- Transmission statistics (total packets, success rate)
-- RSSI information
-
-#### Logs Tab
-- System event logs with timestamp
-- Support for different log levels (info, warning, error, debug)
-- Log clearing functionality
-
-#### Settings Tab
-- WiFi configuration (mode selection, credentials)
-- LoRa parameters configuration
-- Device restart option
-
-#### Display Tab
-- Toggle display on/off
-- Adjust display brightness
-- Set display timeout for power saving
-- Enable/disable automatic page scrolling
-- Set auto-scroll interval
-- Buttons for manual page selection  
-  *Note: These display controls are active only on ESP32 boards.*
-
-#### System Monitor Tab
-- Real-time CPU and memory usage statistics
-- Detailed task list with:
-  - Task state (running, blocked, ready)
-  - Priority
-  - Stack usage
-  - CPU usage percentage
-- Color-coded indicators for resource usage levels
-
-### LCD Display Navigation
-The LCD display cycles through several information pages *(only on ESP32 boards)*:
-1. **Logo page** - Displays project name and version
-2. **LoRa Status** - Shows current LoRa parameters and statistics
-3. **WiFi Status** - Shows current WiFi mode and connection details
-4. **System Info** - Displays uptime, memory usage, and CPU load
-5. **Logs** - Shows most recent system log entries
-
-The display includes:
-- Status bar at the top with WiFi and LoRa indicators
-- Page indicator dots at the bottom
-- Pages auto-scroll by default (configurable in settings)
 
 ## Operation Details
 
@@ -224,7 +152,7 @@ The system implements a simple packet exchange protocol:
 ### System Architecture
 - Multi-task design using FreeRTOS
 - Mutex protection for LoRa module access
-- Separate tasks for sending, receiving, web interface, and display updates
+- Separate tasks for sending, receiving, and display updates
 - Stack monitoring for system health
 - CPU load monitoring with per-task statistics
 
@@ -239,7 +167,7 @@ The system implements a simple packet exchange protocol:
   - Green blinks: Received packet
   - Blue blinks: Acknowledgement received
 - **Display Issues:**  
-  - For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the web interface.  
+  - For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the code.
   - For ESP32-S3 boards, note that the display functionality is currently disabled due to the unavailability of a second display for testing.
 
 ## Customization Options

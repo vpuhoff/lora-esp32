@@ -1,16 +1,11 @@
 #include "tasks.h"
 #include "led.h"
 #include "statistics.h"
-#include "plot-manager.h"
-#include "lora-manager.h" 
+#include "lora-manager.h"
 #include "system-monitor.h"
 #include "display-manager.h"
 #include <WiFi.h>
-#include <SettingsESPWS.h>
 #include "esp_task_wdt.h"
-
-// Объявление внешних переменных, используемых в задаче веб-интерфейса
-extern SettingsESPWS sett;
 
 void createTasks() {
     // LoRa-related tasks on Core 1
@@ -21,7 +16,6 @@ void createTasks() {
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 4096, NULL, 1, NULL, 1);
     
     // UI and display tasks on Core 0 with appropriate priorities
-    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 16384, NULL, 2, NULL, 0);
     #if DISPLAY_ENABLED
     // Задача обновления дисплея только для ESP32
     xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
@@ -136,43 +130,6 @@ void taskMonitorStack(void *parameter) {
         
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10000));  // Проверка каждые 10 секунд
-    }
-}
-
-// Задача для обработки веб-интерфейса
-void taskWebInterface(void *parameter) {
-    esp_task_wdt_add(NULL);
-    for (;;) {
-        sett.tick();
-        
-        // Обновление данных для графика каждые 500 мс
-        // static uint32_t plotTimer = 0;
-        // if (millis() - plotTimer >= 500) {
-        //     plotTimer = millis();
-        //     plotManager.updateData();
-        // }
-        
-        // Периодическое обновление данных LoRa каждые 5000 мс
-        static uint32_t loraTimer = 0;
-        if (millis() - loraTimer >= 5000) {
-            loraTimer = millis();
-            loraManager->updateStats();
-        }
-        
-        // Периодическое логирование состояния системы каждые 10000 мс
-        static uint32_t logTimer = 0;
-        if (millis() - logTimer >= 10000) {
-            logTimer = millis();
-            if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
-                if (WiFi.status() == WL_CONNECTED) {
-                    logger.println("WiFi подключен к " + WiFi.SSID() + ", сигнал: " + String(WiFi.RSSI()) + " dBm");
-                }
-            }
-            logger.println("Свободная память: " + String(ESP.getFreeHeap()) + " байт");
-        }
-        
-        esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для экономии ресурсов
     }
 }
 

@@ -1,6 +1,5 @@
 #include "display-ui.h"
 #include "statistics.h"
-#include "plot-manager.h"
 #include "system-monitor.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

@@ -17,9 +17,6 @@ void taskReceive(void *parameter);
 // Задача мониторинга стека
 void taskMonitorStack(void *parameter);
 
-// Задача для обработки веб-интерфейса
-void taskWebInterface(void *parameter);
-
 // Задача обновления дисплея
 void taskDisplayUpdate(void *parameter);
 
