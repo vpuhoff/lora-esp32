@@ -7,8 +7,14 @@
 #include <Adafruit_ST7735.h>
 #include <LittleFS.h>
 #include <GyverDBFile.h>
-#include <SettingsESPWS.h>
-#include <GTimer.h>
+#include <WiFiClient.h>
+
+// Blynk credentials (replace with real values)
+#define BLYNK_TEMPLATE_ID "TMPLXXXXXX"
+#define BLYNK_DEVICE_NAME "ESP32 LoRa Control Panel"
+#define BLYNK_AUTH_TOKEN  "YOUR_BLYNK_AUTH_TOKEN"
+
+#include <BlynkSimpleEsp32.h>
 #include "esp_task_wdt.h"
 
 // Подключение всех модулей
@@ -28,23 +34,13 @@
 #include "wifi-manager.h"    // В этом файле объявлен extern WiFiManager* wifiManager;
 #include "lora-manager.h"    // В этом файле объявлен extern LoRaManager* loraManager;
 #include "plot-manager.h"
-#include "ui-builder.h"
 
-// Объявляем глобальный указатель на UIBuilder
-UIBuilder* uiBuilder = nullptr;
 DisplayManager* displayManager = nullptr;
 SystemMonitor* systemMonitor = nullptr;
 
 // Создаем базу данных для хранения настроек
 GyverDBFile db(&LittleFS, "/settings.db");
 
-// Создаем объект настроек с поддержкой WebSocket
-SettingsESPWS sett("ESP32 LoRa Control Panel", &db);
-
-// Функция-обработчик построения интерфейса
-void buildInterface(sets::Builder& b) {
-    uiBuilder->buildInterface(b);
-}
 
 void setup() {
     Serial.begin(115200);
@@ -70,7 +66,6 @@ void setup() {
     // Создание и инициализация менеджеров
     wifiManager = new WiFiManager(&db);
     loraManager = new LoRaManager(&db);
-    uiBuilder = new UIBuilder(&db);
     systemMonitor = new SystemMonitor(); // Создаем системный монитор
     displayManager = new DisplayManager(&db); // Создаем менеджер дисплея
     
@@ -113,12 +108,11 @@ void setup() {
     logger.println("LoRa started successfully!");
     logger.println("LoRa started successfully!");
     blinkLED(3, 100);
-    
-    // Инициализация веб-сервера
-    sett.begin();
-    sett.onBuild(buildInterface);
-    
-    
+
+    // Инициализация Blynk
+    Blynk.config(BLYNK_AUTH_TOKEN);
+    Blynk.connect();
+
     // Создание задач
     createTasks();
     
@@ -139,12 +133,6 @@ void loop() {
         wdt_added = true;
     }
 
-    static GTimer<millis> tmr(1000, true);
-    if (tmr) {
-        sett.updater()
-            .update(H("logger"), logger);
-            //.update(H(lbl2), random(100));
-    }
     esp_task_wdt_reset();
     vTaskDelay(500);
 }

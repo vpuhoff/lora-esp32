@@ -345,7 +345,7 @@ void DisplayManager::showSystemInfo() {
 void DisplayManager::showLogs() {
     if (_enabled && _display != nullptr) {
         // Вместо показа страницы логов отображаем сообщение
-        showInfo("Logs available in web interface", 2000);
+        showInfo("Logs available in Blynk dashboard", 2000);
         
         // НЕ устанавливаем текущую страницу как PAGE_LOGS
         // _currentPage = PAGE_LOGS;

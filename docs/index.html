@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoRa ESP32/ESP32-S3 Project with Web Interface</title>
+    <title>LoRa ESP32/ESP32-S3 Project with Blynk Interface</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Dark mode CSS -->
@@ -52,7 +52,7 @@
             <div class="row justify-content-center text-center">
                 <div class="col-lg-8">
                     <h1 class="display-4 fw-bold">LoRa ESP32/ESP32-S3 Project</h1>
-                    <p class="lead">A configurable LoRa communication system with comprehensive web interface</p>
+                    <p class="lead">A configurable LoRa communication system with a Blynk-based interface</p>
                     <div class="mt-4">
                         <a href="https://github.com/vpuhoff/lora-esp32" class="btn btn-danger me-2">
                             <i class="fab fa-github"></i> View on GitHub
@@ -75,7 +75,7 @@
                 <div class="col-lg-10">
                     <p class="lead">
                         This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers.
-                        It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging.
+                        It features a Blynk-based management interface for real-time monitoring, configuration, and logging.
                         The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
                     </p>
                     <div class="alert alert-warning">
@@ -97,8 +97,8 @@
                             <div class="feature-icon mb-3">
                                 <i class="fas fa-wifi"></i>
                             </div>
-                            <h5 class="card-title">Web Interface</h5>
-                            <p class="card-text">Comprehensive web-based control panel with real-time statistics, configuration options, and system logs.</p>
+                            <h5 class="card-title">Blynk Interface</h5>
+                            <p class="card-text">Comprehensive Blynk control panel with real-time statistics, configuration options, and system logs.</p>
                         </div>
                     </div>
                 </div>
@@ -198,10 +198,10 @@
                         </div>
                         <div class="col-md-10">
                             <h4>Initial Configuration</h4>
-                            <p>The device creates a WiFi access point named "ESP32_LoRa" with password "12345678" by default. Connect to this network with your computer or smartphone, then open a web browser and navigate to http://192.168.4.1</p>
+                            <p>Configure WiFi credentials and the Blynk authentication token in the firmware before flashing. After powering the device, it will connect to your WiFi network.</p>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-2 text-center">
                             <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
@@ -210,7 +210,7 @@
                         </div>
                         <div class="col-md-10">
                             <h4>Configure Parameters</h4>
-                            <p>Use the web interface to configure WiFi settings, LoRa parameters, display options, and other system settings according to your requirements.</p>
+                            <p>Use the Blynk dashboard to monitor LoRa statistics and adjust device settings.</p>
                         </div>
                     </div>
                 </div>
@@ -408,7 +408,7 @@
                                 </li>
                                 <li class="list-group-item d-flex align-items-center">
                                     <i class="fas fa-book text-primary me-3"></i>
-                                    <a href="https://github.com/GyverLibs/Settings" target="_blank">SettingsESPWS</a>
+                                    <a href="https://docs.blynk.io/en/getting-started/what-do-i-need-to-blynk/quickstart-device-code-overview" target="_blank">Blynk</a>
                                 </li>
                             </ul>
                         </div>
@@ -433,14 +433,14 @@
             </div>
         </section>
 
-        <!-- Web Interface -->
+        <!-- Blynk Interface -->
         <section class="mb-5">
-            <h2 class="text-center mb-4">Web Interface</h2>
+            <h2 class="text-center mb-4">Blynk Interface</h2>
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Dashboard Tab</h5>
+                            <h5 class="mb-0">Dashboard</h5>
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
@@ -455,7 +455,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">LoRa Status Tab</h5>
+                            <h5 class="mb-0">LoRa Status</h5>
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
@@ -470,12 +470,12 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Settings Tab</h5>
+                            <h5 class="mb-0">Blynk Dashboard</h5>
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item">WiFi configuration (mode selection, credentials)</li>
-                                <li class="list-group-item">LoRa parameters configuration</li>
+                                <li class="list-group-item">Remote monitoring and configuration</li>
+                                <li class="list-group-item">LoRa parameter display</li>
                                 <li class="list-group-item">Device restart option</li>
                             </ul>
                         </div>
@@ -485,7 +485,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Display Tab</h5>
+                            <h5 class="mb-0">Display</h5>
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
@@ -520,11 +520,11 @@
                         </li>
                         <li class="list-group-item">
                             <i class="fas fa-list-alt text-primary me-2"></i>
-                            Web interface logs provide detailed system status and error information
+                            Blynk dashboard provides detailed system status and error information
                         </li>
                         <li class="list-group-item">
                             <i class="fas fa-wifi text-primary me-2"></i>
-                            If WiFi connection is unstable, check the configured credentials in Settings
+                            If WiFi connection is unstable, check the configured credentials in the device configuration
                         </li>
                         <li class="list-group-item">
                             <i class="fas fa-lightbulb text-warning me-2"></i>
@@ -538,7 +538,7 @@
                         <li class="list-group-item">
                             <i class="fas fa-desktop text-primary me-2"></i>
                             <strong>Display Issues:</strong><br>
-                            For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the web interface.<br>
+                            For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings via Blynk.<br>
                             For ESP32-S3 boards, note that the display functionality is currently disabled due to the unavailability of a second display for testing.
                         </li>
                     </ul>

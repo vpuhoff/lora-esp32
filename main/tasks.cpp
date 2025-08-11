@@ -6,11 +6,10 @@
 #include "system-monitor.h"
 #include "display-manager.h"
 #include <WiFi.h>
-#include <SettingsESPWS.h>
+#include <BlynkSimpleEsp32.h>
 #include "esp_task_wdt.h"
 
-// Объявление внешних переменных, используемых в задаче веб-интерфейса
-extern SettingsESPWS sett;
+// Задачи интерфейса Blynk не требуют внешних переменных
 
 void createTasks() {
     // LoRa-related tasks on Core 1
@@ -21,7 +20,7 @@ void createTasks() {
     xTaskCreatePinnedToCore(taskMonitorStack, "StackMonitor", 4096, NULL, 1, NULL, 1);
     
     // UI and display tasks on Core 0 with appropriate priorities
-    xTaskCreatePinnedToCore(taskWebInterface, "WebInterface", 16384, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(taskBlynk, "Blynk", 16384, NULL, 2, NULL, 0);
     #if DISPLAY_ENABLED
     // Задача обновления дисплея только для ESP32
     xTaskCreatePinnedToCore(taskDisplayUpdate, "DisplayUpdate", 4096, NULL, 1, NULL, 0);
@@ -139,11 +138,11 @@ void taskMonitorStack(void *parameter) {
     }
 }
 
-// Задача для обработки веб-интерфейса
-void taskWebInterface(void *parameter) {
+// Основная задача интерфейса Blynk
+void taskBlynk(void *parameter) {
     esp_task_wdt_add(NULL);
     for (;;) {
-        sett.tick();
+        Blynk.run();
         
         // Обновление данных для графика каждые 500 мс
         // static uint32_t plotTimer = 0;

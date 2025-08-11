@@ -1,7 +1,7 @@
-# LoRa ESP32/ESP32-S3 Project with Web Interface
+# LoRa ESP32/ESP32-S3 Project with Blynk Interface
 
 ## Description
-This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. It features a comprehensive web-based management interface for real-time monitoring, configuration, and logging. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
+This project implements a configurable LoRa communication system using either ESP32 or ESP32-S3 microcontrollers. It features a Blynk-based cloud management interface for real-time monitoring, configuration, and logging. The system tracks packet delivery statistics, supports different WiFi operating modes, and provides visual feedback via LED indicators.
 
 * **Wiki:** [https://deepwiki.com/vpuhoff/lora-esp32](https://deepwiki.com/vpuhoff/lora-esp32/1-overview)
 
@@ -70,8 +70,8 @@ This project implements a configurable LoRa communication system using either ES
 ### Core Functionality
 - Automatic dual-way LoRa packet transmission with acknowledgment system
 - Dynamic statistics tracking (total packets, delivery success rate, RSSI)
-- Multi-core task management (LoRa operations on Core 1, Web interface on Core 0)
-- Configurable system parameters via web interface
+- Multi-core task management (LoRa operations on Core 1, Blynk interface on Core 0)
+- Configurable system parameters via Blynk dashboard
 - Visual feedback via LED/RGB indicators for system status
 - LCD display for real-time information and status monitoring *(only on ESP32 boards)*
 - CPU and memory usage monitoring with detailed task statistics
@@ -83,14 +83,11 @@ This project implements a configurable LoRa communication system using either ES
 - Transmission power control (2-20 dBm)
 - Maximum transmission attempts setting
 
-### Web Interface
-- Six main sections: Dashboard, LoRa Status, Logs, Settings, Display, and System Monitor
-- Real-time statistics with visual graph of packet delivery success
-- Comprehensive system logs with adjustable detail levels
-- WiFi configuration supporting three modes: AP, STA, or AP+STA
+### Blynk Interface
+- Real-time statistics and logs accessible from Blynk cloud
+- WiFi status monitoring
 - Visual indicators for system status and packet delivery success
-- Display configuration and control options *(Note: Display settings affect only ESP32 boards)*
-- System resource monitoring and task statistics
+- System resource monitoring
 
 ### LCD Display Interface
 - Multiple information pages with automatic scrolling *(available only on ESP32 boards)*
@@ -126,8 +123,7 @@ This project implements a configurable LoRa communication system using either ES
 - [LittleFS](https://github.com/lorol/LITTLEFS) - File system for ESP32
 - [GyverDB](https://github.com/GyverLibs/GyverDB) - Database storage
 - [GyverDBFile](https://github.com/GyverLibs/GyverDB) - File-based database
-- [SettingsESPWS](https://github.com/GyverLibs/Settings) - Web-based UI configuration
-- [GTimer](https://github.com/GyverLibs/GTimer) - For timing operations
+- [Blynk](https://docs.blynk.io/en/getting-started/what-do-i-need-to-blynk/quickstart-device-code-overview) - Cloud-based IoT interface
 - [Adafruit_GFX](https://github.com/adafruit/Adafruit-GFX-Library) - Graphics library
 - [Adafruit_ST7735](https://github.com/adafruit/Adafruit-ST7735-Library) - ST7735 LCD driver
 
@@ -148,50 +144,14 @@ For proper system monitoring functionality, you need to install the Espressif fr
 ## Usage
 
 ### Initial Setup
-1. The device creates a WiFi access point named "ESP32_LoRa" with password "12345678" by default
-2. Connect to this network with your computer or smartphone
-3. Open a web browser and navigate to http://192.168.4.1
-4. Use the web interface to configure the device
+1. Configure WiFi credentials and the Blynk authentication token in `main/main.ino`.
+2. Compile and upload the code to your device.
+3. Open the Blynk mobile app or web dashboard and add a new device using the provided template ID and auth token to monitor and configure the system.
 
-### Web Interface Navigation
-
-#### Dashboard Tab
-- Shows system status (WiFi connection, uptime, free memory)
-- Displays LoRa statistics (packets sent, delivered, success rate)
-- Real-time graph of delivery success rate over time
-
-#### LoRa Status Tab
-- Current LoRa configuration parameters
-- Transmission statistics (total packets, success rate)
-- RSSI information
-
-#### Logs Tab
-- System event logs with timestamp
-- Support for different log levels (info, warning, error, debug)
-- Log clearing functionality
-
-#### Settings Tab
-- WiFi configuration (mode selection, credentials)
-- LoRa parameters configuration
-- Device restart option
-
-#### Display Tab
-- Toggle display on/off
-- Adjust display brightness
-- Set display timeout for power saving
-- Enable/disable automatic page scrolling
-- Set auto-scroll interval
-- Buttons for manual page selection  
-  *Note: These display controls are active only on ESP32 boards.*
-
-#### System Monitor Tab
-- Real-time CPU and memory usage statistics
-- Detailed task list with:
-  - Task state (running, blocked, ready)
-  - Priority
-  - Stack usage
-  - CPU usage percentage
-- Color-coded indicators for resource usage levels
+### Blynk Dashboard
+- View system status, LoRa statistics, and logs in real time.
+- Monitor WiFi connection and device resources.
+- Control display settings (only on ESP32 boards).
 
 ### LCD Display Navigation
 The LCD display cycles through several information pages *(only on ESP32 boards)*:
@@ -224,7 +184,7 @@ The system implements a simple packet exchange protocol:
 ### System Architecture
 - Multi-task design using FreeRTOS
 - Mutex protection for LoRa module access
-- Separate tasks for sending, receiving, web interface, and display updates
+- Separate tasks for sending, receiving, Blynk interface, and display updates
 - Stack monitoring for system health
 - CPU load monitoring with per-task statistics
 
@@ -232,14 +192,14 @@ The system implements a simple packet exchange protocol:
 
 - If the device fails to boot or LoRa initialization fails, the LED will blink indefinitely
 - Check serial output at 115200 baud for diagnostic information
-- Web interface logs provide detailed system status and error information
-- If WiFi connection is unstable, check the configured credentials in Settings
+  - Blynk dashboard provides detailed system status and error information
+- If WiFi connection is unstable, check the configured credentials in the device configuration
 - LED/RGB indicators show device status:
   - Red blinks: Transmitting packet
   - Green blinks: Received packet
   - Blue blinks: Acknowledgement received
 - **Display Issues:**  
-  - For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings in the web interface.  
+  - For ESP32 boards, if the display is not working, check its connections (especially CS, DC, and RST pins) and verify display settings via Blynk.
   - For ESP32-S3 boards, note that the display functionality is currently disabled due to the unavailability of a second display for testing.
 
 ## Customization Options
