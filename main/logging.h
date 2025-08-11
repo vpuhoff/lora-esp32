@@ -1,16 +1,27 @@
-#pragma once // Добавляем эту строку
+#pragma once
 
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include <SettingsESPWS.h>
+#include <Arduino.h>
 
-// Объявляем внешний объект логгера
-extern sets::Logger logger;
+// Simple logger that prints messages to the Serial port
+class SimpleLogger {
+public:
+    template <typename T>
+    void println(const T& msg) { Serial.println(msg); }
 
-// Короткие шаблоны для префиксов логов
-inline String info_() { return sets::Logger::info(); }
-inline String warn_() { return sets::Logger::warn(); }
-inline String error_() { return sets::Logger::error(); }
+    static String info() { return "[INFO] "; }
+    static String warn() { return "[WARN] "; }
+    static String error() { return "[ERROR] "; }
+};
+
+// Global logger instance declaration
+extern SimpleLogger logger;
+
+// Short templates for log prefixes
+inline String info_() { return SimpleLogger::info(); }
+inline String warn_() { return SimpleLogger::warn(); }
+inline String error_() { return SimpleLogger::error(); }
 
 #endif // LOGGING_H

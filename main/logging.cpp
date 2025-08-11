@@ -1,4 +1,5 @@
 #include "logging.h"
 
-// Определяем и инициализируем объект логгера
-sets::Logger logger(1500);
+// Global logger instance
+SimpleLogger logger;
+

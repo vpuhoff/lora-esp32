@@ -30,8 +30,7 @@
         "littlefs": "^1.0.0",
         "gyver-db": "^1.0.0",
         "gyver-db-file": "^1.0.0",
-        "settings-esp-ws": "^1.0.0",
-        "gtimer": "^1.0.0",
+        "blynk": "^1.0.0",
         "adafruit-gfx": "^1.0.0",
         "adafruit-st7735": "^1.0.0"
     },
@@ -57,8 +56,7 @@
                     "adafruit/Adafruit ST7735 and ST7789 Library",
                     "lorol/LittleFS",
                     "gyverlibs/GyverDB",
-                    "gyverlibs/GyverSettings",
-                    "gyverlibs/GTimer"
+                    "blynkkk/Blynk"
                 ],
                 "build_flags": [
                     "-D CONFIG_IDF_TARGET_ESP32"
@@ -73,8 +71,7 @@
                     "adafruit/Adafruit NeoPixel",
                     "lorol/LittleFS",
                     "gyverlibs/GyverDB",
-                    "gyverlibs/GyverSettings",
-                    "gyverlibs/GTimer"
+                    "blynkkk/Blynk"
                 ],
                 "build_flags": [
                     "-D CONFIG_IDF_TARGET_ESP32S3"
